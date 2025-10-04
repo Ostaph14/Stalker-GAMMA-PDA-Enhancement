@@ -1,0 +1,321 @@
+--[[
+    Kalish's More PDA News - Compatibility Layer
+
+    This script provides monkey-patching (runtime function hooking) to ensure
+    compatibility with other mods that modify the same vanilla scripts.
+
+    Instead of overwriting entire script files, we hook into specific functions
+    and add our PDA news functionality without breaking other mods.
+
+    Load Order: The 'z_' prefix ensures this loads AFTER vanilla scripts
+]]
+
+local SCRIPT_VERSION = "0.2.4_compat"
+
+-- Enable debug logging
+local DEBUG_MODE = false
+
+local function dprintf(fmt, ...)
+    if DEBUG_MODE then
+        printf("[Kalish PDA Compat] " .. fmt, ...)
+    end
+end
+
+--=============================================================================
+-- Module: Offline Combat Patches
+--=============================================================================
+local function patch_sim_offline_combat()
+    dprintf("Patching sim_offline_combat...")
+
+    if not sim_offline_combat then
+        dprintf("WARNING: sim_offline_combat module not found!")
+        return false
+    end
+
+    -- Helper: Get random banter pair
+    local function get_random_banter_pair(banter_type)
+        local tbl = utils_data.collect_translations(banter_type, true)
+        if not tbl then
+            return "nil", "nil"
+        end
+        local msg_pick = tbl[math.random(#tbl)]
+        local banter, reply = msg_pick:match("([^|]+)|([^|]+)")
+        return banter, reply
+    end
+
+    -- Helper: Send battle banter
+    local function send_battle_banter(npc_a, npc_b)
+        -- Safety: Check if dynamic_news_helper exists
+        if not dynamic_news_helper or not dynamic_news_helper.send_tip then
+            dprintf("WARNING: dynamic_news_helper.send_tip not available!")
+            return
+        end
+
+        if not (npc_a and npc_b and npc_a.character_name and npc_b.character_name) then
+            return
+        end
+
+        local banter, reply = get_random_banter_pair("st_battle_banter_")
+        if not banter or banter == "nil" then
+            return
+        end
+
+        -- Protect against errors in character_name() or character_icon()
+        local success, name_a = pcall(function() return npc_a:character_name() end)
+        if not success or not name_a then return end
+
+        local success2, icon_a = pcall(function() return npc_a:character_icon() end)
+        if not success2 or not icon_a then return end
+
+        -- First banter from npc_a
+        dynamic_news_helper.send_tip(banter, name_a, 1, 30, icon_a, "beep_1", "npc")
+
+        -- 75% chance for reply from npc_b
+        if math.random(1, 100) > 25 and reply and reply ~= "nil" then
+            local success3, name_b = pcall(function() return npc_b:character_name() end)
+            local success4, icon_b = pcall(function() return npc_b:character_icon() end)
+
+            if success3 and name_b and success4 and icon_b then
+                dynamic_news_helper.send_tip(reply, name_b, math.random(3, 9), 30, icon_b, "beep_2", "npc")
+
+                -- 53% chance for finisher from npc_a
+                if math.random(1, 100) > 47 then
+                    local tbl = utils_data.collect_translations("st_battle_finisher_", true)
+                    if tbl and #tbl > 0 then
+                        local msg_pick = tbl[math.random(#tbl)]
+                        dynamic_news_helper.send_tip(msg_pick, name_a, math.random(12, 23), 30, icon_a, "beep_1", "npc")
+                    end
+                end
+            end
+        end
+    end
+
+    -- Helper: Get random NPC from squad (needed for banter)
+    local function get_random_npc_from_squad(squad)
+        if not squad or not squad.squad_members then return nil end
+
+        local success, squad_npcs = pcall(function()
+            local npcs = {}
+            for k in squad:squad_members() do
+                npcs[#npcs + 1] = k.id
+            end
+            return npcs
+        end)
+
+        if not success or not squad_npcs or #squad_npcs == 0 then
+            return nil
+        end
+
+        local npc_id = squad_npcs[math.random(#squad_npcs)]
+        return alife_object and alife_object(npc_id) or nil
+    end
+
+    -- Patch: simulate_battle - Add battle banter
+    local original_simulate_battle = sim_offline_combat.simulate_battle
+    if original_simulate_battle then
+        sim_offline_combat.simulate_battle = function(id_1, id_2, squad_1, squad_2, community_1, community_2, lid)
+            -- Get NPCs before battle (they might die)
+            local se_attacker = get_random_npc_from_squad(squad_1)
+            local se_victim = get_random_npc_from_squad(squad_2)
+
+            -- Call original function
+            original_simulate_battle(id_1, id_2, squad_1, squad_2, community_1, community_2, lid)
+
+            -- Add our battle banter (10% chance, 59% of that for actual banter)
+            if math.random(1, 100) <= 10 and math.random(1, 100) <= 59 then
+                if se_attacker and se_victim then
+                    send_battle_banter(se_attacker, se_victim)
+                end
+            end
+        end
+        dprintf("  - Patched simulate_battle()")
+    end
+
+    -- Patch: set_battle_outcome - Add SOS messages
+    local original_set_battle_outcome = sim_offline_combat.set_battle_outcome
+    if original_set_battle_outcome then
+        sim_offline_combat.set_battle_outcome = function(victory, id_1, id_2, squad_1, squad_2, community_1, community_2, se_attacker, se_victim, damage)
+            -- Call original function
+            original_set_battle_outcome(victory, id_1, id_2, squad_1, squad_2, community_1, community_2, se_attacker, se_victim, damage)
+
+            -- Add our SOS news on defender victory
+            if not victory then
+                dynamic_news_manager.get_dynamic_news():SOSBattleOffline(squad_2, squad_1)
+            end
+        end
+        dprintf("  - Patched set_battle_outcome()")
+    end
+
+    dprintf("sim_offline_combat patching complete")
+    return true
+end
+
+--=============================================================================
+-- Module: Wounded NPC Patches
+--=============================================================================
+local function patch_xr_wounded()
+    dprintf("Patching xr_wounded...")
+
+    if not xr_wounded or not xr_wounded.Cwound_manager then
+        dprintf("WARNING: xr_wounded.Cwound_manager class not found!")
+        return false
+    end
+
+    -- Patch: Cwound_manager:eat_medkit - Add medkit usage notification
+    local original_eat_medkit = xr_wounded.Cwound_manager.eat_medkit
+    if original_eat_medkit then
+        xr_wounded.Cwound_manager.eat_medkit = function(self)
+            -- Check if we should send news BEFORE eating (while NPC still has medkit)
+            local should_send_news = false
+            if self.npc and self.npc:object("medkit_script") ~= nil then
+                should_send_news = true
+            end
+
+            -- Call original function
+            original_eat_medkit(self)
+
+            -- Send PDA news about medkit usage
+            if should_send_news and dynamic_news_helper and dynamic_news_helper.send_tip then
+                local tbl = utils_data.collect_translations("npc_injured_use_medkit_", true)
+                if tbl and #tbl > 0 then
+                    local msg_pick = tbl[math.random(#tbl)]
+                    local success, name = pcall(function() return self.npc:character_name() end)
+                    local success2, icon = pcall(function() return self.npc:character_icon() end)
+                    if success and name and success2 and icon then
+                        dynamic_news_helper.send_tip(msg_pick, name, 1, 10, icon, "beep_2", "npc")
+                    end
+                end
+            end
+        end
+        dprintf("  - Patched Cwound_manager:eat_medkit()")
+    end
+
+    dprintf("xr_wounded patching complete")
+    return true
+end
+
+--=============================================================================
+-- Module: Campfire Patches
+--=============================================================================
+local function patch_axr_turn_on_campfire()
+    dprintf("Patching axr_turn_on_campfire...")
+
+    if not axr_turn_on_campfire then
+        dprintf("WARNING: axr_turn_on_campfire module not found!")
+        return false
+    end
+
+    -- Helper: Get random campfire banter pair
+    local function get_random_banter_pair()
+        local tbl = utils_data.collect_translations("campfire_on_", true)
+        if not tbl then
+            return false
+        end
+        local msg_pick = tbl[math.random(#tbl)]
+        local banter, reply = msg_pick:match("([^|]+)|([^|]+)")
+        return banter, reply
+    end
+
+    -- Find the evaluator update function (this is tricky without seeing vanilla code)
+    -- We'll patch the act_turn_on_campfire action's execute method instead
+    if axr_turn_on_campfire.act_turn_on_campfire and axr_turn_on_campfire.act_turn_on_campfire.execute then
+        local original_execute = axr_turn_on_campfire.act_turn_on_campfire.execute
+
+        axr_turn_on_campfire.act_turn_on_campfire.execute = function(self)
+            -- Call original function
+            original_execute(self)
+
+            -- 9% chance to send campfire banter
+            if math.random(1, 100) > 91 and dynamic_news_helper and dynamic_news_helper.send_tip then
+                local npc = self.object
+                if npc and npc.character_name then
+                    local banter, reply = get_random_banter_pair()
+                    if banter and banter ~= "nil" then
+                        local success, name = pcall(function() return npc:character_name() end)
+                        local success2, icon = pcall(function() return npc:character_icon() end)
+                        if success and name and success2 and icon then
+                            dynamic_news_helper.send_tip(banter, name, math.random(12, 23), 10, icon, "beep_1", "npc")
+                        end
+                    end
+                end
+            end
+        end
+        dprintf("  - Patched act_turn_on_campfire:execute()")
+    end
+
+    dprintf("axr_turn_on_campfire patching complete")
+    return true
+end
+
+--=============================================================================
+-- Module: Tasks Guide Patches
+--=============================================================================
+local function patch_tasks_guide()
+    dprintf("Patching tasks_guide...")
+
+    if not tasks_guide then
+        dprintf("WARNING: tasks_guide module not found!")
+        return false
+    end
+
+    -- This script only uses dynamic_news_helper.GetPointDescription() which is
+    -- already available from dynamic_news_manager, so no patching needed.
+    -- The functions are called directly and will work as long as dynamic_news_manager loads.
+
+    dprintf("tasks_guide requires no patching (uses helper functions only)")
+    return true
+end
+
+--=============================================================================
+-- Main Initialization
+--=============================================================================
+local function apply_all_patches()
+    dprintf("===========================================")
+    dprintf("Kalish's PDA News Compatibility Layer v%s", SCRIPT_VERSION)
+    dprintf("===========================================")
+
+    local patches_applied = 0
+    local patches_failed = 0
+
+    -- Apply patches in order
+    if patch_sim_offline_combat() then
+        patches_applied = patches_applied + 1
+    else
+        patches_failed = patches_failed + 1
+    end
+
+    if patch_xr_wounded() then
+        patches_applied = patches_applied + 1
+    else
+        patches_failed = patches_failed + 1
+    end
+
+    if patch_axr_turn_on_campfire() then
+        patches_applied = patches_applied + 1
+    else
+        patches_failed = patches_failed + 1
+    end
+
+    if patch_tasks_guide() then
+        patches_applied = patches_applied + 1
+    else
+        patches_failed = patches_failed + 1
+    end
+
+    dprintf("===========================================")
+    dprintf("Patching complete: %d applied, %d failed", patches_applied, patches_failed)
+    dprintf("===========================================")
+
+    if patches_failed > 0 then
+        printf("! [Kalish PDA News] WARNING: %d compatibility patches failed to apply", patches_failed)
+    end
+end
+
+--=============================================================================
+-- Game Start Hook
+--=============================================================================
+function on_game_start()
+    -- Apply patches after all other scripts have loaded
+    -- The z_ prefix ensures we load last
+    apply_all_patches()
+end

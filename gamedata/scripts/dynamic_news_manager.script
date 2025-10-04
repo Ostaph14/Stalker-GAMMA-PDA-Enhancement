@@ -608,11 +608,27 @@
         end
 
         if (shw_death_report) and (self.spammer.show_about_death_response == 1) then
-            if IsStalker(who) then
-                self:ReportDeathByStalker(victim,who)
-            elseif IsMonster(who) then
-                self:ReportDeathByMutant(victim,who)
-            end
+            -- Delayed death report system: Reports appear after 30-120 seconds
+            local delay = math.random(30, 120) -- Random delay in seconds
+            local victim_id = victim:id()
+            local who_id = who:id()
+            local self_ref = self
+
+            CreateTimeEvent("DynamicNewsManager", "DelayedDeathReport_"..victim_id.."_"..game.get_game_time():diffSec(game.CTime()), delay,
+                function()
+                    -- Retrieve objects (they might have despawned)
+                    local v = level.object_by_id(victim_id)
+                    local w = level.object_by_id(who_id)
+                    if v and w then
+                        if IsStalker(w) then
+                            self_ref:ReportDeathByStalker(v, w)
+                        elseif IsMonster(w) then
+                            self_ref:ReportDeathByMutant(v, w)
+                        end
+                    end
+                    return true -- Mark event as complete
+                end
+            )
         end
 
         local say = false
