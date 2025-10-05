@@ -1,0 +1,1013 @@
+-- ========================================================================
+-- Zone Alive - Core Conversation Engine
+-- ========================================================================
+-- Purpose: Main conversation system that makes NPCs feel ALIVE
+-- Author: Kalish + Claude Code
+-- Version: 1.0.0
+-- ========================================================================
+
+local npc_state = z_zone_alive_npc_state
+
+local DEBUG_MODE = false
+
+local function dprintf(...)
+    if DEBUG_MODE then
+        printf("[Zone Alive] " .. string.format(...))
+    end
+end
+
+-- ========================================================================
+-- CONFIGURATION
+-- ========================================================================
+
+local MAX_ACTIVE_THREADS = 3        -- Max simultaneous conversations
+local THREAD_MAX_DURATION = 600     -- Auto-close after 10 minutes
+local MESSAGE_DELAY_MIN = 8         -- Min seconds between stages
+local MESSAGE_DELAY_MAX = 20        -- Max seconds between stages
+local SHOW_ALL_MESSAGES = true      -- Show all conversation messages (not just final)
+
+-- Topic cooldowns (seconds)
+local TOPIC_COOLDOWNS = {
+    combat_legendary_kill = 20 * 60,     -- 20 minutes
+    combat_survival = 15 * 60,           -- 15 minutes
+    faction_debate = 8 * 60,             -- 8 minutes (periodic event, needs shorter cooldown)
+    survival_story = 18 * 60,            -- 18 minutes
+    economic_gossip = 12 * 60,           -- 12 minutes
+    zone_mythology = 45 * 60,            -- 45 minutes
+    rookie_roasting = 10 * 60,           -- 10 minutes
+    drunk_philosophy = 25 * 60,          -- 25 minutes
+    grief_vengeance = 20 * 60,           -- 20 minutes
+    legendary_moment = 60 * 60,          -- 60 minutes
+    rumor_propagation = 15 * 60          -- 15 minutes
+}
+
+-- Stage continuation probabilities by topic
+local TOPIC_CONTINUATION_PROB = {
+    combat_legendary_kill = {0.75, 0.70, 0.60, 0.50},
+    combat_survival = {0.70, 0.65, 0.55},
+    faction_debate = {0.85, 0.80, 0.65, 0.45},
+    survival_story = {0.70, 0.65, 0.50},
+    economic_gossip = {0.60, 0.50},
+    zone_mythology = {0.75, 0.70, 0.60},
+    rookie_roasting = {0.65},
+    drunk_philosophy = {0.70, 0.60, 0.45},
+    grief_vengeance = {0.75, 0.60, 0.40},
+    legendary_moment = {0.80, 0.75, 0.70, 0.65, 0.55},
+    rumor_propagation = {0.70, 0.60, 0.50, 0.40, 0.30}
+}
+
+-- ========================================================================
+-- GLOBAL STATE
+-- ========================================================================
+
+local zone_alive_enabled = false
+local active_threads = {}
+local thread_counter = 0
+local topic_last_run = {}
+
+-- ========================================================================
+-- CONVERSATION THREAD CLASS
+-- ========================================================================
+
+class "ConversationThread"
+
+function ConversationThread:__init(config)
+    self.id = "thread_" .. tostring(thread_counter)
+    thread_counter = thread_counter + 1
+
+    self.topic = config.topic or "generic"
+    self.stage = 0
+    self.max_stages = config.max_stages or 3
+
+    self.context = config.context or {}
+    self.emotion = config.emotion or "neutral"
+
+    self.participants = {}
+    if config.initiator then
+        table.insert(self.participants, {
+            id = config.initiator,
+            role = "initiator",
+            last_spoke = nil
+        })
+    end
+
+    self.created = game.get_game_time()
+    self.last_activity = self.created
+    self.next_stage_time = nil
+
+    -- Get continuation probabilities for this topic
+    self.continuation_probs = TOPIC_CONTINUATION_PROB[self.topic] or {0.60, 0.50, 0.40}
+
+    -- CONVERSATION MEMORY (Next-Gen!)
+    self.memory = {
+        previous_speakers = {},      -- Track speaking order
+        last_speaker_id = nil,       -- Most recent speaker
+        interrupted_speakers = {},   -- Who got cut off
+        relationship_cache = {}      -- Cache relationships for performance
+    }
+
+    -- Cache all participant relationships at creation
+    self:cache_relationships()
+
+    dprintf("Thread created: %s (topic: %s, max_stages: %d)", self.id, self.topic, self.max_stages)
+end
+
+function ConversationThread:should_continue()
+    -- Check if we've reached max stages
+    if self.stage >= self.max_stages then
+        dprintf("Thread %s: Reached max stages (%d)", self.id, self.max_stages)
+        return false
+    end
+
+    -- Check if thread expired
+    local now = game.get_game_time()
+    local age = now:diffSec(self.created)
+    if age > THREAD_MAX_DURATION then
+        dprintf("Thread %s: Expired (age: %d sec)", self.id, age)
+        return false
+    end
+
+    -- Probabilistic continuation
+    local prob_index = self.stage + 1
+    local prob = self.continuation_probs[prob_index] or 0.40
+
+    -- Apply MCM frequency multiplier
+    local freq_mult = get_frequency_multiplier()
+    prob = prob * freq_mult
+
+    local roll = math.random(100) / 100
+    if roll > prob then
+        dprintf("Thread %s: Failed continuation roll (%.2f > %.2f)", self.id, roll, prob)
+        return false
+    end
+
+    return true
+end
+
+function ConversationThread:add_participant(npc_id, role)
+    for _, p in ipairs(self.participants) do
+        if p.id == npc_id then
+            return  -- Already participating
+        end
+    end
+
+    table.insert(self.participants, {
+        id = npc_id,
+        role = role or "participant",
+        last_spoke = nil
+    })
+
+    dprintf("Thread %s: Added participant %d (role: %s)", self.id, npc_id, role or "participant")
+end
+
+function ConversationThread:get_next_speaker()
+    -- Weighted speaker selection based on traits and relationships
+    local candidates = {}
+    local now = game.get_game_time()
+
+    for _, p in ipairs(self.participants) do
+        local se_npc = alife_object(p.id)
+        if se_npc and se_npc.character_name then
+            -- Check if they spoke recently
+            if not p.last_spoke or now:diffSec(p.last_spoke) > 30 then
+                -- Check if NPC should participate based on traits
+                if npc_state and npc_state.should_npc_participate_in_topic then
+                    if npc_state.should_npc_participate_in_topic(p.id, self.topic) then
+                        -- Get weight based on faction/topic relevance
+                        local weight = 1
+                        if npc_state.get_speaker_weight_for_topic then
+                            weight = npc_state.get_speaker_weight_for_topic(p.id, self.topic)
+                        end
+                        table.insert(candidates, {participant = p, weight = weight})
+                    end
+                else
+                    -- Fallback if npc_state not available
+                    table.insert(candidates, {participant = p, weight = 1})
+                end
+            end
+        end
+    end
+
+    if #candidates == 0 then
+        return nil
+    end
+
+    -- Weighted random selection
+    local total_weight = 0
+    for _, c in ipairs(candidates) do
+        total_weight = total_weight + c.weight
+    end
+
+    if total_weight == 0 then
+        return nil
+    end
+
+    local roll = math.random() * total_weight
+    local cumulative = 0
+    for _, c in ipairs(candidates) do
+        cumulative = cumulative + c.weight
+        if roll <= cumulative then
+            return c.participant
+        end
+    end
+
+    -- Fallback
+    return candidates[1].participant
+end
+
+function ConversationThread:advance()
+    printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: advance() called, current stage: %d/%d",
+           self.id, self.stage, self.max_stages))
+
+    if not self:should_continue() then
+        printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: should_continue() returned false, ending",
+               self.id))
+        return false
+    end
+
+    local speaker = self:get_next_speaker()
+    if not speaker then
+        printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: No valid speaker found at stage %d",
+               self.id, self.stage))
+        dprintf("Thread %s: No valid speaker found", self.id)
+        return false
+    end
+
+    printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: Speaker selected: %d, sending message...",
+           self.id, speaker.id))
+
+    -- Generate and send message
+    local success = self:send_message(speaker)
+    if not success then
+        printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: send_message() failed",
+               self.id))
+        return false
+    end
+
+    printf(string.format("! [ZONE ALIVE DEBUG] Thread %s: Message sent successfully, advancing stage",
+           self.id))
+
+    -- Update state
+    speaker.last_spoke = game.get_game_time()
+    self.stage = self.stage + 1
+    self.last_activity = game.get_game_time()
+
+    -- Update conversation memory for next-gen transformations
+    table.insert(self.memory.previous_speakers, speaker.id)
+    self.memory.last_speaker_id = speaker.id
+
+    -- Build relationships through conversation (+5 familiarity)
+    if npc_state and npc_state.modify_relationship then
+        for _, other in ipairs(self.participants) do
+            if other.id ~= speaker.id then
+                npc_state.modify_relationship(speaker.id, other.id, 5)
+            end
+        end
+    end
+
+    -- Schedule next stage
+    local delay = math.random(MESSAGE_DELAY_MIN, MESSAGE_DELAY_MAX)
+    self.next_stage_time = game.get_game_time() + delay
+
+    CreateTimeEvent("ZoneAlive", self.id .. "_stage_" .. self.stage, delay, function()
+        if active_threads[self.id] then
+            active_threads[self.id]:advance()
+        end
+        return true
+    end)
+
+    dprintf("Thread %s: Advanced to stage %d, next in %d sec", self.id, self.stage, delay)
+    return true
+end
+
+function ConversationThread:send_message(speaker)
+    local se_npc = alife_object(speaker.id)
+    if not se_npc or not se_npc.character_name then
+        return false
+    end
+
+    -- Get target NPC (last speaker) for relationship context
+    local target_id = self.memory.last_speaker_id
+
+    -- Map thread topic to V3 composer topic
+    local composer_topic = nil
+    if self.topic == "faction_debate" or self.topic == "rookie_roasting" then
+        composer_topic = "faction_comment"
+    elseif self.topic == "zone_mythology" or self.topic == "survival_story" or self.topic == "combat_survival" then
+        composer_topic = "survival_story"
+    elseif self.topic == "drunk_philosophy" then
+        composer_topic = "weather_comment"
+    elseif self.topic == "combat_legendary_kill" then
+        composer_topic = "combat_kill"
+    elseif self.topic == "grief_vengeance" then
+        composer_topic = "grief"
+    elseif self.topic == "economic_gossip" then
+        composer_topic = "price_complaint"
+    elseif self.topic == "containment" then
+        composer_topic = "mutant_sighting"
+    end
+
+    -- USE V3 COMPOSER (Complete sentence templates with transformations)
+    local message_text = nil
+    if z_zone_alive_composer_v3 and z_zone_alive_composer_v3.compose_dynamic_message then
+        -- Pass event context from thread to composer
+        message_text = z_zone_alive_composer_v3.compose_dynamic_message(speaker.id, target_id, composer_topic, self.context)
+    else
+        printf("! [ZONE ALIVE] CRITICAL: V3 composer not loaded!")
+        return false
+    end
+
+    if not message_text or message_text == "" then
+        printf("! [ZONE ALIVE] Thread %s: V3 composer failed to generate message", self.id)
+        return false
+    end
+
+    -- Send via dynamic_news_helper
+    if dynamic_news_helper and dynamic_news_helper.send_tip then
+        local success, name = pcall(function() return se_npc:character_name() end)
+        local success2, icon = pcall(function() return se_npc:character_icon() end)
+
+        if success and name and success2 and icon then
+            -- Only show message to player if SHOW_ALL_MESSAGES or it's the final stage
+            local should_display = SHOW_ALL_MESSAGES or (self.stage + 1 >= self.max_stages)
+
+            if should_display then
+                local duration = 30  -- Message display time
+                dynamic_news_helper.send_tip(message_text, name, math.random(1, 3), duration, icon, "beep_1", "npc")
+                dprintf("Thread %s: Message DISPLAYED by %s (stage %d)", self.id, name, self.stage)
+            else
+                dprintf("Thread %s: Message generated but NOT displayed (stage %d/%d)",
+                       self.id, self.stage, self.max_stages)
+            end
+
+            -- ALWAYS log zone alive messages to console (using string.format for proper formatting)
+            printf(string.format("[ZONE ALIVE] %s | Stage %d/%d | Topic: %s | Emotion: %s | Displayed: %s",
+                   name, self.stage + 1, self.max_stages, self.topic, self.emotion or "neutral",
+                   should_display and "YES" or "NO"))
+            printf(string.format("[ZONE ALIVE] Message: %s", message_text))
+
+            return true
+        end
+    end
+
+    return false
+end
+
+function ConversationThread:close()
+    -- Remove all scheduled events
+    for i = 0, self.max_stages do
+        RemoveTimeEvent("ZoneAlive", self.id .. "_stage_" .. i)
+    end
+
+    dprintf("Thread %s: Closed (final stage: %d/%d)", self.id, self.stage, self.max_stages)
+end
+
+-- ========================================================================
+-- MESSAGE TEMPLATE SELECTION
+-- ========================================================================
+
+-- ========================================================================
+-- NEXT-GEN: RELATIONSHIP-BASED MESSAGE TRANSFORMATION
+-- ========================================================================
+
+function ConversationThread:cache_relationships()
+    -- Cache all participant relationships for performance
+    if not npc_state or not npc_state.get_relationship then
+        return
+    end
+
+    for _, p1 in ipairs(self.participants) do
+        for _, p2 in ipairs(self.participants) do
+            if p1.id ~= p2.id then
+                local key = p1.id .. "_" .. p2.id
+                self.memory.relationship_cache[key] = npc_state.get_relationship(p1.id, p2.id)
+            end
+        end
+    end
+end
+
+function ConversationThread:get_cached_relationship(speaker_id, target_id)
+    if not speaker_id or not target_id then return 0 end
+    local key = speaker_id .. "_" .. target_id
+    return self.memory.relationship_cache[key] or 0
+end
+
+function get_faction_insult(faction)
+    local insults = {
+        freedom = "Freedom anarchist",
+        duty = "Duty fascist",
+        dolg = "Duty fascist",
+        bandit = "bandit scum",
+        military = "military dog",
+        ecologist = "egghead",
+        stalker = "freelancer"
+    }
+    return insults[faction] or faction
+end
+
+function get_faction_friendly(faction)
+    local friendly = {
+        duty = "Duty brother",
+        dolg = "Duty brother",
+        freedom = "Freedom fighter",
+        stalker = "fellow stalker",
+        ecologist = "scientist friend"
+    }
+    return friendly[faction] or "friend"
+end
+
+function transform_message_by_relationships(speaker_id, message_text, thread)
+    if not npc_state or not thread or not thread.memory then
+        return message_text
+    end
+
+    -- Determine target (last speaker or strongest relationship in conversation)
+    local target_id = thread.memory.last_speaker_id
+    if not target_id then
+        return message_text  -- First message, no transformation
+    end
+
+    local relationship = thread:get_cached_relationship(speaker_id, target_id)
+    local se_target = alife_object(target_id)
+    if not se_target then
+        return message_text
+    end
+
+    -- Safely get target info
+    local target_name = "Stalker"
+    if se_target.character_name then
+        local success, name = pcall(function() return se_target:character_name() end)
+        if success and name then
+            target_name = name
+        end
+    end
+
+    local target_faction = "stalker"
+    if se_target.community then
+        local success, faction = pcall(function() return se_target:community() end)
+        if success and faction then
+            target_faction = faction
+        end
+    end
+
+    -- SWORN ENEMIES (-100 to -50): Hostile, aggressive wrapping
+    if relationship <= -50 then
+        local hostile_prefixes = {
+            "Typical {faction} bullshit! ",
+            "{faction} propaganda as usual! ",
+            "Listen to this {faction} fool - ",
+            "Oh please, {faction}! "
+        }
+        local hostile_suffixes = {
+            ", whether you like it or not!",
+            " - but {faction} never learns!",
+            " ...not that {faction} cares about facts.",
+            " Wake up, {faction}!"
+        }
+
+        local prefix = hostile_prefixes[math.random(#hostile_prefixes)]
+        local suffix = hostile_suffixes[math.random(#hostile_suffixes)]
+
+        prefix = prefix:gsub("{faction}", get_faction_insult(target_faction))
+        suffix = suffix:gsub("{faction}", get_faction_insult(target_faction))
+
+        message_text = prefix .. message_text .. suffix
+
+    -- DISLIKE (-49 to -20): Sarcastic, dismissive
+    elseif relationship <= -20 then
+        local dismissive_prefixes = {
+            "*rolls eyes* ",
+            "*sighs* Sure, ",
+            "Oh great, another opinion... "
+        }
+        local dismissive_suffixes = {
+            " ...though some people don't get it.",
+            " - obviously.",
+            " But what do I know?"
+        }
+
+        message_text = dismissive_prefixes[math.random(#dismissive_prefixes)] ..
+                      message_text ..
+                      dismissive_suffixes[math.random(#dismissive_suffixes)]
+
+    -- CLOSE FRIENDS (50 to 100): Personal, supportive
+    elseif relationship >= 50 then
+        local friendly_prefixes = {
+            "*nods at {name}* You know as well as I do, brother - ",
+            "{name}, old friend, ",
+            "*to {name}* Exactly my thought - ",
+            "You get it, {name} - "
+        }
+        local friendly_suffixes = {
+            ", right {name}?",
+            " - we've seen it ourselves, {name}.",
+            " You know I'm right, {name}."
+        }
+
+        local prefix = friendly_prefixes[math.random(#friendly_prefixes)]
+        local suffix = friendly_suffixes[math.random(#friendly_suffixes)]
+
+        prefix = prefix:gsub("{name}", target_name)
+        suffix = suffix:gsub("{name}", target_name)
+
+        message_text = prefix .. message_text .. suffix
+
+    -- FRIENDLY (20 to 49): Agreeable, seeking confirmation
+    elseif relationship >= 20 then
+        local agreeable_suffixes = {
+            ", don't you think?",
+            ", wouldn't you say?",
+            " - agree?",
+            ", right?"
+        }
+        message_text = message_text .. agreeable_suffixes[math.random(#agreeable_suffixes)]
+    end
+
+    return message_text
+end
+
+function add_tone_prefix(speaker_id, message_text, emotion)
+    -- Add emotional/tonal prefixes based on NPC state
+    local tone_prefixes = {
+        hostile = "*interrupts angrily* ",
+        dismissive = "*scoffs* ",
+        supportive = "*nods* ",
+        proud = "*stands tall* ",
+        angry = "*grits teeth* ",
+        fearful = "*whispers nervously* ",
+        drunk = "*slurs* ",
+        jovial = "*laughs* ",
+        grief = "*voice cracks* "
+    }
+
+    local prefix = tone_prefixes[emotion] or ""
+
+    -- Add faction prefix
+    if speaker_id then
+        local se_npc = alife_object(speaker_id)
+        if se_npc then
+            local community = "stalker"
+            if se_npc.community then
+                local success, faction = pcall(function() return se_npc:community() end)
+                if success and faction then
+                    community = faction
+                end
+            end
+
+            local faction_prefixes = {
+                duty = "[DUTY] ",
+                dolg = "[DUTY] ",
+                freedom = "[FREEDOM] ",
+                ecologist = "[ECOLOGIST] ",
+                military = "[MILITARY] ",
+                bandit = "[BANDIT] "
+            }
+            local faction_prefix = faction_prefixes[community] or ""
+            return faction_prefix .. prefix .. message_text
+        end
+    end
+
+    return prefix .. message_text
+end
+
+function select_message_template(topic, emotion, stage, role)
+    -- Build message ID: st_conv_[topic]_[emotion]_[stage]_[variant]
+
+    -- Topic-specific emotion fallbacks (for when templates use different emotion names)
+    local emotion_fallbacks = {
+        faction_debate = {
+            neutral = {"conviction", "rebellion", "cynical"},
+            angry = {"rage", "anger"},
+            proud = {"conviction"},
+            jovial = {"cynical"}
+        },
+        zone_mythology = {
+            neutral = {"fear", "skeptic"},
+            fearful = {"fear"},
+            angry = {"witness"}
+        },
+        rookie_roasting = {
+            neutral = {"naive", "sarcastic"}
+        },
+        drunk_philosophy = {
+            neutral = {"drunk", "skeptic", "absurd"}
+        },
+        survival_story = {
+            neutral = {"relief", "curious"}
+        },
+        economic_gossip = {
+            neutral = {"excitement", "envy"}
+        },
+        combat_legendary_kill = {
+            neutral = {"pride", "skeptic"}
+        },
+        grief_vengeance = {
+            neutral = {"anger", "sadness"}
+        }
+    }
+
+    -- List of emotions to try, in order
+    local emotions_to_try = {emotion}
+
+    -- Add fallbacks if available
+    if emotion_fallbacks[topic] and emotion_fallbacks[topic][emotion] then
+        for _, fallback in ipairs(emotion_fallbacks[topic][emotion]) do
+            table.insert(emotions_to_try, fallback)
+        end
+    end
+
+    -- Always try "neutral" as last resort
+    if emotion ~= "neutral" then
+        table.insert(emotions_to_try, "neutral")
+    end
+
+    -- Try each emotion variant
+    for _, try_emotion in ipairs(emotions_to_try) do
+        local base_id = string.format("st_conv_%s_%s_%d", topic, try_emotion, stage)
+
+        -- Try to find available variants (1-15 to cover all existing templates)
+        local available_variants = {}
+        for i = 1, 15 do
+            local id = base_id .. "_" .. i
+            if game.translate_string(id) ~= id then  -- Translation exists
+                table.insert(available_variants, id)
+            end
+        end
+
+        if #available_variants > 0 then
+            return available_variants[math.random(#available_variants)]
+        end
+    end
+
+    dprintf("No message templates found for topic: %s, emotion: %s, stage: %d", topic, emotion, stage)
+    return nil
+end
+
+function parse_message(message_id, context, se_npc)
+    local raw_text = game.translate_string(message_id)
+    if raw_text == message_id then
+        return nil  -- Translation not found
+    end
+
+    -- Handle banter|reply format (for multi-line)
+    local parts = {}
+    for part in string.gmatch(raw_text, "[^|]+") do
+        table.insert(parts, part)
+    end
+
+    -- Use first part for now (reply logic handled by continuation)
+    local text = parts[1] or raw_text
+
+    -- Substitute variables (shallow copy)
+    local variables = {}
+    for k, v in pairs(context) do
+        variables[k] = v
+    end
+
+    -- Add speaker name
+    if se_npc and se_npc.character_name then
+        local success, name = pcall(function() return se_npc:character_name() end)
+        if success and name then
+            variables["speaker"] = name
+        end
+    end
+
+    -- Parse using utils_data
+    if utils_data and utils_data.parse_string_keys then
+        text = utils_data.parse_string_keys(text, variables)
+    end
+
+    return text
+end
+
+-- ========================================================================
+-- THREAD MANAGEMENT
+-- ========================================================================
+
+function recruit_participants(thread, max_participants)
+    -- Recruit nearby NPCs to join the conversation
+    if not db or not db.OnlineStalkers then
+        return
+    end
+
+    local recruited = 0
+    local max_to_recruit = max_participants or 3
+
+    -- Try to recruit random online NPCs
+    for i = 1, math.min(#db.OnlineStalkers, 10) do  -- Check up to 10 random NPCs
+        if recruited >= max_to_recruit then
+            break
+        end
+
+        local npc_id = db.OnlineStalkers[math.random(#db.OnlineStalkers)]
+        if npc_id then
+            -- Don't recruit if already participating
+            local already_in = false
+            for _, p in ipairs(thread.participants) do
+                if p.id == npc_id then
+                    already_in = true
+                    break
+                end
+            end
+
+            if not already_in then
+                -- Check if NPC should participate based on traits
+                local should_join = true
+                if npc_state and npc_state.should_npc_participate_in_topic then
+                    should_join = npc_state.should_npc_participate_in_topic(npc_id, thread.topic)
+                end
+
+                if should_join then
+                    thread:add_participant(npc_id, "participant")
+                    recruited = recruited + 1
+                end
+            end
+        end
+    end
+
+    dprintf("Recruited %d participants for thread %s (total participants: %d)",
+            recruited, thread.id, #thread.participants)
+end
+
+function create_conversation_thread(config)
+    -- Check if we can create a new thread
+    if not can_create_thread(config.topic) then
+        -- Silently reject - don't spam console
+        return nil
+    end
+
+    -- Create thread
+    local thread = ConversationThread(config)
+    active_threads[thread.id] = thread
+
+    -- RECRUIT ADDITIONAL PARTICIPANTS (2-3 more NPCs)
+    recruit_participants(thread, 3)
+
+    -- If still no participants after recruitment, abort
+    if #thread.participants == 0 then
+        printf("! [ZONE ALIVE] Thread %s aborted - no participants could be recruited", thread.id)
+        active_threads[thread.id] = nil
+        return nil
+    end
+
+    -- Mark topic as run ONLY after successful creation
+    mark_topic_run(config.topic)
+
+    printf("! [ZONE ALIVE] Created conversation thread: %s (topic: %s, max_stages: %d, participants: %d)",
+           thread.id, thread.topic, thread.max_stages, #thread.participants)
+
+    -- Start first message immediately
+    CreateTimeEvent("ZoneAlive", thread.id .. "_start", 0.1, function()
+        if active_threads[thread.id] then
+            local success = active_threads[thread.id]:advance()
+            if not success then
+                printf("! [ZONE ALIVE] Thread %s failed to advance (no valid speaker?)", thread.id)
+                close_thread(thread.id)
+            end
+        end
+        return true
+    end)
+
+    return thread
+end
+
+function can_create_thread(topic)
+    -- Check if system enabled
+    if not zone_alive_enabled then
+        return false
+    end
+
+    -- Check active thread limit
+    if count_active_threads() >= MAX_ACTIVE_THREADS then
+        -- Silently reject if max threads reached (no spam)
+        return false
+    end
+
+    -- Check topic cooldown
+    local cooldown = TOPIC_COOLDOWNS[topic] or (15 * 60)
+
+    -- Apply MCM frequency multiplier
+    local freq_mult = get_frequency_multiplier()
+    cooldown = cooldown / freq_mult
+
+    if topic_last_run[topic] then
+        local now = game.get_game_time()
+        local elapsed = now:diffSec(topic_last_run[topic])
+
+        if elapsed < cooldown then
+            -- Silently reject if on cooldown (no spam)
+            return false
+        end
+    end
+
+    -- DO NOT set cooldown here - only set when thread actually created successfully
+    return true
+end
+
+function mark_topic_run(topic)
+    -- Update last run time ONLY when thread successfully created
+    topic_last_run[topic] = game.get_game_time()
+end
+
+function count_active_threads()
+    local count = 0
+    for _ in pairs(active_threads) do
+        count = count + 1
+    end
+    return count
+end
+
+function close_thread(thread_id)
+    local thread = active_threads[thread_id]
+    if thread then
+        thread:close()
+        active_threads[thread_id] = nil
+    end
+end
+
+function cleanup_expired_threads()
+    local now = game.get_game_time()
+    local to_remove = {}
+
+    for id, thread in pairs(active_threads) do
+        local age = now:diffSec(thread.created)
+        if age > THREAD_MAX_DURATION then
+            table.insert(to_remove, id)
+        end
+    end
+
+    for _, id in ipairs(to_remove) do
+        dprintf("Cleaning up expired thread: %s", id)
+        close_thread(id)
+    end
+end
+
+-- ========================================================================
+-- MCM INTEGRATION
+-- ========================================================================
+
+function get_frequency_multiplier()
+    if not ui_mcm then
+        return 1.0
+    end
+
+    local freq_setting = ui_mcm.get("zone_alive/frequency")
+    if not freq_setting then
+        return 1.0
+    end
+
+    local multipliers = {
+        [0] = 0.25,  -- Very Rare (4x LONGER cooldown = divide by 0.25)
+        [1] = 0.5,   -- Rare (2x LONGER cooldown = divide by 0.5)
+        [2] = 1.0,   -- Balanced (default)
+        [3] = 2.0,   -- Common (2x SHORTER cooldown = divide by 2.0)
+        [4] = 4.0    -- Very Common (4x SHORTER cooldown = divide by 4.0)
+    }
+
+    return multipliers[freq_setting] or 1.0
+end
+
+function is_topic_enabled(topic)
+    if not ui_mcm then
+        return true
+    end
+
+    local topic_settings = {
+        combat_legendary_kill = "zone_alive/enable_survival_stories",
+        combat_survival = "zone_alive/enable_survival_stories",
+        faction_debate = "zone_alive/enable_faction_debates",
+        drunk_philosophy = "zone_alive/enable_faction_debates",
+        rookie_roasting = "zone_alive/enable_faction_debates",
+        zone_mythology = "zone_alive/enable_survival_stories",
+        rumor_propagation = "zone_alive/enable_mutant_sightings",
+        economic_gossip = "zone_alive/enable_price_gossip",
+        grief_vengeance = "zone_alive/enable_survival_stories",
+        survival_story = "zone_alive/enable_survival_stories"
+    }
+
+    local setting = topic_settings[topic]
+    if setting then
+        return ui_mcm.get(setting) ~= false
+    end
+
+    return true
+end
+
+function get_max_stages_for_topic(topic, default_max)
+    if not ui_mcm then
+        return default_max
+    end
+
+    local depth_setting = ui_mcm.get("zone_alive/max_stages")
+    if not depth_setting then
+        return default_max
+    end
+
+    -- Depth setting ranges:
+    -- 1 = Brief (1-3 messages)
+    -- 2 = Standard (3-5 messages, default)
+    -- 3 = Epic (5-7 messages)
+
+    local depth_multipliers = {
+        [1] = 0.6,   -- Brief: reduces max_stages
+        [2] = 1.0,   -- Standard: default
+        [3] = 1.4    -- Epic: increases max_stages
+    }
+
+    local multiplier = depth_multipliers[depth_setting] or 1.0
+    local adjusted_max = math.floor(default_max * multiplier + 0.5)
+
+    -- Clamp to reasonable range (1-7 stages)
+    return math.max(1, math.min(7, adjusted_max))
+end
+
+-- ========================================================================
+-- PERIODIC TICK
+-- ========================================================================
+
+function zone_alive_tick()
+    if not zone_alive_enabled then
+        return false
+    end
+
+    -- Cleanup expired threads
+    cleanup_expired_threads()
+
+    -- Continue ticking (return false to keep event alive)
+    return false
+end
+
+-- ========================================================================
+-- INITIALIZATION
+-- ========================================================================
+
+function init()
+    -- Check if enabled in MCM
+    if ui_mcm and ui_mcm.get("zone_alive/enable") == false then
+        printf("! [ZONE ALIVE] System disabled in MCM")
+        return
+    end
+
+    zone_alive_enabled = true
+    printf("! [ZONE ALIVE] System initialized and active!")
+    printf("! [ZONE ALIVE] Conversations will appear when NPCs kill mutants, survive blowouts, etc.")
+
+    -- Initialize NPC state system
+    if npc_state and npc_state.init then
+        npc_state.init()
+        printf("! [ZONE ALIVE] NPC emotion/relationship system initialized")
+    end
+
+    -- Initialize event detection system
+    if z_zone_alive_events and z_zone_alive_events.init then
+        z_zone_alive_events.init()
+        printf("! [ZONE ALIVE] Event detection system initialized (mutant kills, battles, surges)")
+    else
+        printf("! [ZONE ALIVE] WARNING: Event system not found (z_zone_alive_events)")
+    end
+
+    -- Start periodic tick (30 second intervals)
+    CreateTimeEvent("ZoneAlive", "Tick", 30, zone_alive_tick, {})
+
+    -- Debug mode check
+    if ui_mcm and ui_mcm.get("zone_alive/debug") then
+        DEBUG_MODE = true
+        printf("! [ZONE ALIVE] Debug mode enabled")
+    end
+end
+
+function destroy()
+    zone_alive_enabled = false
+
+    -- Destroy NPC state system
+    if npc_state and npc_state.destroy then
+        npc_state.destroy()
+    end
+
+    -- Close all active threads
+    for id, thread in pairs(active_threads) do
+        thread:close()
+    end
+    active_threads = {}
+
+    -- Remove tick
+    RemoveTimeEvent("ZoneAlive", "Tick")
+
+    dprintf("Zone Alive destroyed")
+end
+
+-- ========================================================================
+-- EXPORTS
+-- ========================================================================
+
+-- Export functions for other modules (global registration for GAMMA)
+if not z_zone_alive_core then
+    z_zone_alive_core = {
+        init = init,
+        destroy = destroy,
+        create_conversation_thread = create_conversation_thread,
+        close_thread = close_thread,
+        is_topic_enabled = is_topic_enabled,
+        get_max_stages_for_topic = get_max_stages_for_topic
+    }
+end

@@ -1,0 +1,156 @@
+-- ========================================================================
+-- Zone Alive V3 - MCM Settings Integration
+-- ========================================================================
+-- Purpose: Mod Configuration Menu settings for Zone Alive system
+-- Author: Kalish + Claude Code
+-- Version: 3.0.0
+-- ========================================================================
+
+-- MCM integration for user-configurable conversation settings
+function on_mcm_load()
+    return {
+        id = "zone_alive",
+        sh = true,
+        gr = {
+            -- Title
+            {
+                id = "title",
+                type = "slide",
+                link = "ui_options_slider_zone_alive",
+                text = "ui_mcm_zone_alive_title",
+                size = {512, 50},
+                spacing = 20
+            },
+
+            -- Master Enable/Disable
+            {
+                id = "enable",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Conversation Frequency
+            {
+                id = "frequency",
+                type = "list",
+                val = 2,
+                def = 2,
+                content = {
+                    {0, "st_alive_very_rare"},
+                    {1, "st_alive_rare"},
+                    {2, "st_alive_balanced"},
+                    {3, "st_alive_common"},
+                    {4, "st_alive_very_common"}
+                }
+            },
+
+            -- Max Conversation Depth
+            {
+                id = "max_stages",
+                type = "list",
+                val = 2,
+                def = 2,
+                content = {
+                    {1, "st_alive_brief"},
+                    {2, "st_alive_balanced"},
+                    {3, "st_alive_epic"}
+                }
+            },
+
+            -- Topic Filters Section
+            {
+                id = "divider_topics",
+                type = "slide",
+                link = "ui_options_slider_zone_alive",
+                text = "ui_mcm_zone_alive_topics_title",
+                size = {512, 5},
+                spacing = 10
+            },
+
+            -- Price Complaints / Economic Gossip
+            {
+                id = "enable_price_gossip",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Mutant Sightings
+            {
+                id = "enable_mutant_sightings",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Survival Stories
+            {
+                id = "enable_survival_stories",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Faction Debates / Comments
+            {
+                id = "enable_faction_debates",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Weather Comments
+            {
+                id = "enable_weather_comments",
+                type = "check",
+                val = 1,
+                def = true
+            },
+
+            -- Advanced Section
+            {
+                id = "divider_advanced",
+                type = "slide",
+                link = "ui_options_slider_zone_alive",
+                text = "ui_mcm_zone_alive_advanced_title",
+                size = {512, 5},
+                spacing = 10
+            },
+
+            -- Debug Mode
+            {
+                id = "debug",
+                type = "check",
+                val = 1,
+                def = false
+            }
+        }
+    }
+end
+
+-- Settings change callback
+function on_option_change()
+    -- If master enable/disable changed, reinit or shutdown system
+    if z_zone_alive_core then
+        local is_enabled = ui_mcm and ui_mcm.get("zone_alive/enable")
+
+        if is_enabled == false then
+            -- Disable system
+            if z_zone_alive_core.destroy then
+                z_zone_alive_core.destroy()
+            end
+            if z_zone_alive_events and z_zone_alive_events.destroy then
+                z_zone_alive_events.destroy()
+            end
+        elseif is_enabled == true then
+            -- Re-enable system
+            if z_zone_alive_core.init then
+                z_zone_alive_core.init()
+            end
+            if z_zone_alive_events and z_zone_alive_events.init then
+                z_zone_alive_events.init()
+            end
+        end
+    end
+end

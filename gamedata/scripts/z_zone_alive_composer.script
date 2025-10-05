@@ -1,0 +1,385 @@
+-- ========================================================================
+-- Zone Alive - Dynamic Message Composer
+-- ========================================================================
+-- Purpose: Procedurally compose messages from modular fragments
+-- Uses: NPC emotion, relationships, game context
+-- Author: Kalish + Claude Code
+-- Version: 2.0.0
+-- ========================================================================
+
+local game_data = z_zone_alive_data
+local npc_state = z_zone_alive_npc_state
+
+local DEBUG_MODE = false
+
+local function dprintf(...)
+    if DEBUG_MODE then
+        printf("[Zone Alive Composer] " .. string.format(...))
+    end
+end
+
+-- ========================================================================
+-- MESSAGE FRAGMENT SELECTION
+-- ========================================================================
+
+-- Each fragment type has variants based on emotion/relationship/context
+local FRAGMENT_TYPES = {
+    "opening",      -- How message starts (emotion-based)
+    "subject",      -- Who/what we're talking about (relationship-based)
+    "action",       -- What's happening
+    "object",       -- Target of action
+    "detail",       -- Context-specific details
+    "closer"        -- How message ends (emotion-based)
+}
+
+function select_fragment(fragment_type, emotion, relationship, context, topic)
+    -- Build translation key based on fragment type
+    -- Returns a random matching fragment
+
+    local base_key = "st_frag_" .. fragment_type
+    local available = {}
+
+    if fragment_type == "opening" or fragment_type == "closer" then
+        -- Emotion-based (opening/closing sets tone)
+        local modifier = emotion or "neutral"
+        for i = 1, 20 do
+            local key = string.format("%s_%s_%d", base_key, modifier, i)
+            local translated = game.translate_string(key)
+            if translated ~= key then
+                table.insert(available, translated)
+            end
+        end
+    elseif fragment_type == "subject" then
+        -- Subject needs BOTH relationship AND topic
+        -- Try topic_relationship combo first: st_frag_subject_price_hostile_1
+        local rel_modifier = "neutral"
+        if relationship >= 50 then
+            rel_modifier = "friendly"
+        elseif relationship <= -50 then
+            rel_modifier = "hostile"
+        end
+
+        -- Try topic-specific + relationship
+        for i = 1, 20 do
+            local key = string.format("%s_%s_%s_%d", base_key, topic, rel_modifier, i)
+            local translated = game.translate_string(key)
+            if translated ~= key then
+                table.insert(available, translated)
+            end
+        end
+
+        -- Fallback: topic only (neutral relationship)
+        if #available == 0 then
+            for i = 1, 20 do
+                local key = string.format("%s_%s_%d", base_key, topic, i)
+                local translated = game.translate_string(key)
+                if translated ~= key then
+                    table.insert(available, translated)
+                end
+            end
+        end
+
+        -- Fallback: relationship only (generic topic)
+        if #available == 0 then
+            for i = 1, 20 do
+                local key = string.format("%s_%s_%d", base_key, rel_modifier, i)
+                local translated = game.translate_string(key)
+                if translated ~= key then
+                    table.insert(available, translated)
+                end
+            end
+        end
+    else
+        -- Action/object/detail: topic-specific only
+        local modifier = topic or "generic"
+        for i = 1, 20 do
+            local key = string.format("%s_%s_%d", base_key, modifier, i)
+            local translated = game.translate_string(key)
+            if translated ~= key then
+                table.insert(available, translated)
+            end
+        end
+    end
+
+    -- Final fallback to generic
+    if #available == 0 then
+        for i = 1, 20 do
+            local key = string.format("%s_generic_%d", base_key, i)
+            local translated = game.translate_string(key)
+            if translated ~= key then
+                table.insert(available, translated)
+            end
+        end
+    end
+
+    if #available > 0 then
+        return available[math.random(#available)]
+    end
+
+    return ""  -- Empty if no fragments found
+end
+
+-- ========================================================================
+-- VARIABLE SUBSTITUTION
+-- ========================================================================
+
+function substitute_variables(text, context, speaker_id, target_id)
+    if not text or text == "" then return "" end
+
+    -- Replace all {variable} placeholders with context values
+    local result = text
+
+    -- Context-based substitutions
+    if context then
+        for key, value in pairs(context) do
+            local placeholder = "{" .. key .. "}"
+            result = result:gsub(placeholder, tostring(value))
+        end
+    end
+
+    -- NPC-based substitutions
+    if speaker_id then
+        local speaker_name = "someone"
+        local se_speaker = alife_object(speaker_id)
+        if se_speaker and se_speaker.character_name then
+            local success, name = pcall(function() return se_speaker:character_name() end)
+            if success and name then
+                speaker_name = name
+            end
+        end
+        result = result:gsub("{speaker}", speaker_name)
+    end
+
+    if target_id then
+        local target_name = "you"
+        local se_target = alife_object(target_id)
+        if se_target and se_target.character_name then
+            local success, name = pcall(function() return se_target:character_name() end)
+            if success and name then
+                target_name = name
+            end
+        end
+        result = result:gsub("{target}", target_name)
+    end
+
+    return result
+end
+
+-- ========================================================================
+-- MESSAGE COMPOSITION
+-- ========================================================================
+
+function compose_message(config)
+    --[[
+        config = {
+            topic = "price_gossip",
+            speaker_id = 12345,
+            target_id = 67890,  -- Optional: who they're talking to
+            context = {},  -- Topic-specific data
+            emotion = "angry",
+            relationship = -20  -- speaker->target relationship
+        }
+    ]]
+
+    local topic = config.topic or "generic_chat"
+    local speaker_id = config.speaker_id
+    local target_id = config.target_id
+    local context = config.context or {}
+    local emotion = config.emotion or "neutral"
+    local relationship = config.relationship or 0
+
+    -- Select fragments for each part - pass topic for coherent selection
+    local fragments = {}
+    local fragment_order = {"opening", "subject", "action", "object", "detail", "closer"}
+
+    for _, frag_type in ipairs(fragment_order) do
+        local fragment = select_fragment(frag_type, emotion, relationship, context, topic)
+        if fragment and fragment ~= "" then
+            table.insert(fragments, fragment)
+        end
+    end
+
+    -- Join fragments into complete message
+    local raw_message = table.concat(fragments, " ")
+
+    -- Substitute variables
+    local final_message = substitute_variables(raw_message, context, speaker_id, target_id)
+
+    -- Clean up double spaces and trim
+    final_message = final_message:gsub("  +", " ")
+    final_message = final_message:gsub("^%s+", ""):gsub("%s+$", "")
+
+    -- DEBUG: Log composition details
+    printf("! [ZONE ALIVE COMPOSER] Topic: %s | Emotion: %s | Raw: %s", topic, emotion, raw_message)
+    printf("! [ZONE ALIVE COMPOSER] Context: item=%s, trader=%s",
+           context.item or "nil", context.trader or "nil")
+    printf("! [ZONE ALIVE COMPOSER] Final: %s", final_message)
+
+    return final_message
+end
+
+-- ========================================================================
+-- TOPIC-SPECIFIC COMPOSERS
+-- ========================================================================
+
+function compose_price_gossip(speaker_id, target_id, emotion, relationship)
+    local context = game_data.build_price_gossip_context()
+
+    return compose_message({
+        topic = "price",
+        speaker_id = speaker_id,
+        target_id = target_id,
+        context = context,
+        emotion = emotion,
+        relationship = relationship
+    })
+end
+
+function compose_location_chatter(speaker_id, target_id, emotion, relationship)
+    local context = game_data.build_location_chatter_context()
+
+    return compose_message({
+        topic = "location",
+        speaker_id = speaker_id,
+        target_id = target_id,
+        context = context,
+        emotion = emotion,
+        relationship = relationship
+    })
+end
+
+function compose_survival_story(speaker_id, target_id, emotion, relationship)
+    local context = game_data.build_survival_story_context()
+
+    return compose_message({
+        topic = "survival",
+        speaker_id = speaker_id,
+        target_id = target_id,
+        context = context,
+        emotion = emotion,
+        relationship = relationship
+    })
+end
+
+function compose_faction_comment(speaker_id, target_id, emotion, relationship)
+    local se_speaker = alife_object(speaker_id)
+    local speaker_faction = "stalker"
+    if se_speaker and se_speaker.community then
+        local success, result = pcall(function() return se_speaker:community() end)
+        if success and result then
+            speaker_faction = result
+        end
+    end
+
+    local context = game_data.build_faction_tension_context(speaker_faction)
+
+    return compose_message({
+        topic = "faction",
+        speaker_id = speaker_id,
+        target_id = target_id,
+        context = context,
+        emotion = emotion,
+        relationship = relationship
+    })
+end
+
+function compose_weather_comment(speaker_id, target_id, emotion, relationship)
+    local context = game_data.build_weather_comment_context()
+
+    return compose_message({
+        topic = "weather",
+        speaker_id = speaker_id,
+        target_id = target_id,
+        context = context,
+        emotion = emotion,
+        relationship = relationship
+    })
+end
+
+-- ========================================================================
+-- TOPIC SELECTION
+-- ========================================================================
+
+-- Weight distribution for different topics
+local TOPIC_WEIGHTS = {
+    price_gossip = 15,
+    location_chatter = 20,
+    survival_story = 18,
+    faction_comment = 12,
+    weather_comment = 10,
+    generic_banter = 25
+}
+
+function select_random_topic()
+    local total_weight = 0
+    for _, weight in pairs(TOPIC_WEIGHTS) do
+        total_weight = total_weight + weight
+    end
+
+    local roll = math.random() * total_weight
+    local cumulative = 0
+
+    for topic, weight in pairs(TOPIC_WEIGHTS) do
+        cumulative = cumulative + weight
+        if roll <= cumulative then
+            return topic
+        end
+    end
+
+    return "generic_banter"
+end
+
+function get_composer_for_topic(topic)
+    local composers = {
+        price_gossip = compose_price_gossip,
+        location_chatter = compose_location_chatter,
+        survival_story = compose_survival_story,
+        faction_comment = compose_faction_comment,
+        weather_comment = compose_weather_comment
+    }
+
+    return composers[topic]
+end
+
+-- ========================================================================
+-- MAIN COMPOSITION FUNCTION
+-- ========================================================================
+
+function compose_dynamic_message(speaker_id, target_id)
+    -- Main entry point: generate a contextually-aware message
+
+    -- Get speaker emotion and relationship to target
+    local emotion, intensity = "neutral", 0
+    if npc_state and npc_state.get_npc_current_emotion then
+        emotion, intensity = npc_state.get_npc_current_emotion(speaker_id)
+    end
+
+    local relationship = 0
+    if target_id and npc_state and npc_state.get_relationship then
+        relationship = npc_state.get_relationship(speaker_id, target_id)
+    end
+
+    -- Select topic
+    local topic = select_random_topic()
+
+    -- Get appropriate composer
+    local composer = get_composer_for_topic(topic)
+
+    if composer then
+        return composer(speaker_id, target_id, emotion, relationship)
+    else
+        -- Fallback: generic banter
+        return compose_message({
+            topic = "generic",
+            speaker_id = speaker_id,
+            target_id = target_id,
+            context = {},
+            emotion = emotion,
+            relationship = relationship
+        })
+    end
+end
+
+-- ========================================================================
+-- EXPORTS
+-- ========================================================================

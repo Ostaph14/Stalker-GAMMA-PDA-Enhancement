@@ -1,0 +1,549 @@
+-- ========================================================================
+-- Zone Alive - NPC State System
+-- ========================================================================
+-- Purpose: Per-NPC emotion states, personality traits, and relationships
+-- Author: Kalish + Claude Code
+-- Version: 1.0.0
+-- ========================================================================
+
+local DEBUG_MODE = false
+
+local function dprintf(...)
+    if DEBUG_MODE then
+        printf("[Zone Alive NPC State] " .. string.format(...))
+    end
+end
+
+-- ========================================================================
+-- FACTION TRAIT TEMPLATES
+-- ========================================================================
+
+local FACTION_TRAIT_TEMPLATES = {
+    duty = {
+        aggression = 70,
+        philosophy = 20,
+        superstition = 10,
+        humor = 30,
+        loyalty = 90
+    },
+    freedom = {
+        aggression = 50,
+        philosophy = 80,
+        superstition = 60,
+        humor = 70,
+        loyalty = 70
+    },
+    stalker = {
+        aggression = 50,
+        philosophy = 50,
+        superstition = 70,
+        humor = 60,
+        loyalty = 50
+    },
+    bandit = {
+        aggression = 80,
+        philosophy = 20,
+        superstition = 40,
+        humor = 80,
+        loyalty = 30
+    },
+    ecologist = {
+        aggression = 20,
+        philosophy = 90,
+        superstition = 30,
+        humor = 40,
+        loyalty = 80
+    },
+    military = {
+        aggression = 80,
+        philosophy = 10,
+        superstition = 5,
+        humor = 20,
+        loyalty = 95
+    },
+    dolg = {  -- Duty (Russian name)
+        aggression = 70,
+        philosophy = 20,
+        superstition = 10,
+        humor = 30,
+        loyalty = 90
+    },
+    actor_stalker = {
+        aggression = 50,
+        philosophy = 50,
+        superstition = 70,
+        humor = 60,
+        loyalty = 50
+    }
+}
+
+-- ========================================================================
+-- CORE STATE FUNCTIONS
+-- ========================================================================
+
+function get_npc_state(npc_id)
+    if not npc_id then
+        return nil
+    end
+
+    if not db.storage[npc_id] then
+        dprintf("WARNING: db.storage[%d] not found", npc_id)
+        return nil
+    end
+
+    -- Lazy initialization: create state on first access
+    if not db.storage[npc_id].zone_alive_state then
+        dprintf("Initializing state for NPC %d", npc_id)
+        db.storage[npc_id].zone_alive_state = {
+            current_emotion = "neutral",
+            emotion_intensity = 0,
+            emotion_expires_timestamp = nil,
+            traits = init_npc_traits(npc_id),
+            relationships = {}
+        }
+    end
+
+    return db.storage[npc_id].zone_alive_state
+end
+
+function init_npc_traits(npc_id)
+    local se_npc = alife_object(npc_id)
+    if not se_npc then
+        dprintf("WARNING: alife_object(%d) not found", npc_id)
+        return get_default_traits()
+    end
+
+    -- Safely get community
+    local community = "stalker"
+    if se_npc.community then
+        local success, result = pcall(function() return se_npc:community() end)
+        if success and result then
+            community = result
+        end
+    end
+
+    local template = FACTION_TRAIT_TEMPLATES[community] or FACTION_TRAIT_TEMPLATES.stalker
+
+    -- Add ±20 random variance for individuality
+    local traits = {}
+    for trait, value in pairs(template) do
+        local variance = math.random(-20, 20)
+        traits[trait] = math.max(0, math.min(100, value + variance))
+    end
+
+    dprintf("Initialized traits for NPC %d (%s): aggr=%d, phil=%d, super=%d, humor=%d, loyal=%d",
+            npc_id, community, traits.aggression, traits.philosophy, traits.superstition, traits.humor, traits.loyalty)
+
+    return traits
+end
+
+function get_default_traits()
+    return {
+        aggression = 50,
+        philosophy = 50,
+        superstition = 50,
+        humor = 50,
+        loyalty = 50
+    }
+end
+
+-- ========================================================================
+-- EMOTION SYSTEM
+-- ========================================================================
+
+function get_npc_current_emotion(npc_id)
+    local state = get_npc_state(npc_id)
+    if not state then
+        return "neutral", 0
+    end
+
+    -- Lazy expiry check (on-demand, not in update loop)
+    if state.emotion_expires_timestamp then
+        local now = game.get_game_time()
+        local current_timestamp = now:diffSec(game.CTime())
+        if current_timestamp >= state.emotion_expires_timestamp then
+            dprintf("Emotion expired for NPC %d, resetting to neutral", npc_id)
+            state.current_emotion = "neutral"
+            state.emotion_intensity = 0
+            state.emotion_expires_timestamp = nil
+        end
+    end
+
+    return state.current_emotion or "neutral", state.emotion_intensity or 0
+end
+
+function set_npc_emotion(npc_id, emotion, intensity, duration_sec)
+    local state = get_npc_state(npc_id)
+    if not state then
+        return
+    end
+
+    -- Only override if new emotion is more intense or current is neutral
+    local current_emotion, current_intensity = get_npc_current_emotion(npc_id)
+
+    if current_emotion == "neutral" or intensity > current_intensity then
+        state.current_emotion = emotion
+        state.emotion_intensity = math.max(0, math.min(100, intensity))
+
+        -- Calculate expiry time (duration_sec seconds from now)
+        -- Store as raw timestamp for simple comparison
+        local now = game.get_game_time()
+        state.emotion_expires_timestamp = now:diffSec(game.CTime()) + duration_sec
+
+        dprintf("Set emotion for NPC %d: %s (intensity=%d, duration=%ds)",
+                npc_id, emotion, intensity, duration_sec)
+    else
+        dprintf("Emotion %s (intensity=%d) not strong enough to override %s (intensity=%d) for NPC %d",
+                emotion, intensity, current_emotion, current_intensity, npc_id)
+    end
+end
+
+-- ========================================================================
+-- RELATIONSHIP SYSTEM
+-- ========================================================================
+
+function get_relationship(npc_id_a, npc_id_b)
+    if not npc_id_a or not npc_id_b or npc_id_a == npc_id_b then
+        return 0
+    end
+
+    local state_a = get_npc_state(npc_id_a)
+    if not state_a then
+        return 0
+    end
+
+    -- Check custom relationship (sparse storage)
+    if state_a.relationships and state_a.relationships[npc_id_b] then
+        return state_a.relationships[npc_id_b]
+    end
+
+    -- Fall back to faction-based relationship
+    return get_faction_relationship(npc_id_a, npc_id_b)
+end
+
+function get_faction_relationship(npc_id_a, npc_id_b)
+    local se_a = alife_object(npc_id_a)
+    local se_b = alife_object(npc_id_b)
+
+    if not se_a or not se_b then
+        return 0
+    end
+
+    -- Safely get communities
+    local comm_a = "stalker"
+    local comm_b = "stalker"
+
+    if se_a.community then
+        local success, result = pcall(function() return se_a:community() end)
+        if success and result then
+            comm_a = result
+        end
+    end
+
+    if se_b.community then
+        local success, result = pcall(function() return se_b:community() end)
+        if success and result then
+            comm_b = result
+        end
+    end
+
+    -- Same faction = friendly
+    if comm_a == comm_b then
+        return 50
+    end
+
+    -- Check if factions are enemies
+    if game_relations and game_relations.is_factions_enemies then
+        if game_relations.is_factions_enemies(comm_a, comm_b) then
+            return -100
+        end
+    end
+
+    -- Neutral
+    return 0
+end
+
+function modify_relationship(npc_id_a, npc_id_b, delta)
+    if not npc_id_a or not npc_id_b or npc_id_a == npc_id_b then
+        return
+    end
+
+    local state_a = get_npc_state(npc_id_a)
+    if not state_a then
+        return
+    end
+
+    if not state_a.relationships then
+        state_a.relationships = {}
+    end
+
+    local current = get_relationship(npc_id_a, npc_id_b)
+    local new_value = math.max(-100, math.min(100, current + delta))
+
+    -- Only store if different from faction default
+    local faction_default = get_faction_relationship(npc_id_a, npc_id_b)
+
+    if math.abs(new_value - faction_default) > 5 then
+        state_a.relationships[npc_id_b] = new_value
+        dprintf("Modified relationship: NPC %d → NPC %d: %d → %d (delta=%d)",
+                npc_id_a, npc_id_b, current, new_value, delta)
+    else
+        -- Remove from storage if back to faction default (save memory)
+        state_a.relationships[npc_id_b] = nil
+        dprintf("Relationship reset to faction default: NPC %d → NPC %d",
+                npc_id_a, npc_id_b)
+    end
+end
+
+function get_relationship_category(npc_id_a, npc_id_b)
+    local rel = get_relationship(npc_id_a, npc_id_b)
+
+    if rel <= -50 then
+        return "sworn_enemies"
+    elseif rel <= -20 then
+        return "dislike"
+    elseif rel >= 50 then
+        return "close_friends"
+    elseif rel >= 20 then
+        return "friendly"
+    else
+        return "neutral"
+    end
+end
+
+-- ========================================================================
+-- CONVERSATION DYNAMICS
+-- ========================================================================
+
+-- Topic preferences based on emotion
+local EMOTION_TOPIC_WEIGHTS = {
+    proud = {
+        combat_legendary_kill = 10,
+        faction_debate = 5,
+        economic_gossip = 3
+    },
+    angry = {
+        grief_vengeance = 10,
+        faction_debate = 8,
+        rookie_roasting = 7
+    },
+    fearful = {
+        zone_mythology = 10,
+        survival_story = 8
+    },
+    drunk = {
+        drunk_philosophy = 10,
+        rookie_roasting = 6,
+        zone_mythology = 5
+    },
+    grief = {
+        grief_vengeance = 10,
+        survival_story = 5
+    },
+    jovial = {
+        drunk_philosophy = 7,
+        faction_debate = 5,
+        economic_gossip = 6
+    }
+}
+
+-- Trait requirements for topics
+local TOPIC_TRAIT_REQUIREMENTS = {
+    faction_debate = {loyalty = 60},
+    drunk_philosophy = {philosophy = 50, humor = 40},
+    zone_mythology = {superstition = 60},
+    rookie_roasting = {humor = 60, aggression = 40},
+    combat_legendary_kill = {aggression = 30}
+}
+
+function should_npc_initiate_topic(npc_id, topic)
+    local state = get_npc_state(npc_id)
+    if not state then
+        return false
+    end
+
+    local emotion, intensity = get_npc_current_emotion(npc_id)
+
+    -- Check emotion-topic weight
+    local weights = EMOTION_TOPIC_WEIGHTS[emotion] or {}
+    local weight = weights[topic] or 1
+
+    -- High emotion intensity = more likely to talk about related topics
+    local intensity_multiplier = 1 + (intensity / 100)
+    local chance = weight * intensity_multiplier * 10
+
+    return math.random(100) <= chance
+end
+
+function should_npc_participate_in_topic(npc_id, topic)
+    local state = get_npc_state(npc_id)
+    if not state then
+        return true  -- Default allow
+    end
+
+    local traits = state.traits
+    local requirements = TOPIC_TRAIT_REQUIREMENTS[topic] or {}
+
+    for trait, min_value in pairs(requirements) do
+        if (traits[trait] or 50) < min_value then
+            dprintf("NPC %d failed trait requirement for %s: %s=%d < %d",
+                    npc_id, topic, trait, traits[trait] or 50, min_value)
+            return false
+        end
+    end
+
+    return true
+end
+
+function get_response_tone(speaker_id, target_id, topic)
+    if not target_id then
+        -- No specific target, use emotion
+        local emotion, intensity = get_npc_current_emotion(speaker_id)
+        return emotion
+    end
+
+    local relationship = get_relationship(speaker_id, target_id)
+    local emotion, _ = get_npc_current_emotion(speaker_id)
+
+    -- Relationship overrides emotion for tone
+    if relationship <= -50 then
+        return "hostile"
+    elseif relationship <= -20 then
+        return "dismissive"
+    elseif relationship >= 50 then
+        return "supportive"
+    else
+        -- Use current emotion for tone
+        return emotion
+    end
+end
+
+function get_speaker_weight_for_topic(npc_id, topic)
+    local state = get_npc_state(npc_id)
+    if not state then
+        return 1
+    end
+
+    local se_npc = alife_object(npc_id)
+    if not se_npc then
+        return 0
+    end
+
+    -- Safely get community
+    local community = "stalker"
+    if se_npc.community then
+        local success, result = pcall(function() return se_npc:community() end)
+        if success and result then
+            community = result
+        end
+    end
+
+    -- Topic-specific weights by faction
+    local topic_weights = {
+        faction_debate = {
+            duty = 10, dolg = 10, freedom = 10, stalker = 3, ecologist = 2
+        },
+        zone_mythology = {
+            stalker = 8, ecologist = 7, duty = 2, dolg = 2
+        },
+        drunk_philosophy = {
+            stalker = 7, freedom = 6, actor_stalker = 8
+        },
+        combat_legendary_kill = {
+            duty = 8, dolg = 8, military = 9, bandit = 7, stalker = 6
+        },
+        economic_gossip = {
+            stalker = 7, bandit = 9, freedom = 5
+        }
+    }
+
+    local weights = topic_weights[topic] or {}
+    return weights[community] or 1
+end
+
+-- ========================================================================
+-- GARBAGE COLLECTION
+-- ========================================================================
+
+function cleanup_dead_relationships()
+    dprintf("Running relationship garbage collection...")
+    local cleaned_count = 0
+
+    for npc_id, st in pairs(db.storage) do
+        if st.zone_alive_state and st.zone_alive_state.relationships then
+            for other_id, _ in pairs(st.zone_alive_state.relationships) do
+                local se_other = alife_object(other_id)
+                if not se_other or not se_other:alive() then
+                    st.zone_alive_state.relationships[other_id] = nil
+                    cleaned_count = cleaned_count + 1
+                end
+            end
+        end
+    end
+
+    dprintf("Cleaned up %d dead relationships", cleaned_count)
+end
+
+-- ========================================================================
+-- INITIALIZATION
+-- ========================================================================
+
+function init()
+    dprintf("Initializing NPC state system...")
+
+    -- Periodic garbage collection (every 10 minutes)
+    CreateTimeEvent("ZoneAliveNPCState", "RelationshipGC", 600, function()
+        cleanup_dead_relationships()
+        return false  -- Keep repeating
+    end)
+
+    -- Clean up dead NPC states on death
+    RegisterScriptCallback("npc_on_death_callback", function(victim, who)
+        if victim and victim:id() and db.storage[victim:id()] then
+            -- Don't delete entire state (relationships might be needed)
+            -- Just mark as dead for cleanup
+            local state = db.storage[victim:id()].zone_alive_state
+            if state then
+                state.dead = true
+            end
+        end
+    end)
+
+    dprintf("NPC state system initialized")
+end
+
+function destroy()
+    dprintf("Destroying NPC state system...")
+    RemoveTimeEvent("ZoneAliveNPCState", "RelationshipGC")
+end
+
+-- ========================================================================
+-- EXPORTS
+-- ========================================================================
+
+if not z_zone_alive_npc_state then
+    z_zone_alive_npc_state = {
+        -- State access
+        get_npc_state = get_npc_state,
+        init_npc_traits = init_npc_traits,
+
+        -- Emotion system
+        get_npc_current_emotion = get_npc_current_emotion,
+        set_npc_emotion = set_npc_emotion,
+
+        -- Relationship system
+        get_relationship = get_relationship,
+        modify_relationship = modify_relationship,
+        get_relationship_category = get_relationship_category,
+
+        -- Conversation dynamics
+        should_npc_initiate_topic = should_npc_initiate_topic,
+        should_npc_participate_in_topic = should_npc_participate_in_topic,
+        get_response_tone = get_response_tone,
+        get_speaker_weight_for_topic = get_speaker_weight_for_topic,
+
+        -- Lifecycle
+        init = init,
+        destroy = destroy
+    }
+end

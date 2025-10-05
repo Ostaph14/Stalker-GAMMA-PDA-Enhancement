@@ -1,0 +1,394 @@
+-- ========================================================================
+-- Zone Alive - Game Data Extractor
+-- ========================================================================
+-- Purpose: Extract real-time game state for dynamic conversations
+-- Author: Kalish + Claude Code
+-- Version: 2.0.0
+-- ========================================================================
+
+local DEBUG_MODE = false
+
+local function dprintf(...)
+    if DEBUG_MODE then
+        printf("[Zone Alive Data] " .. string.format(...))
+    end
+end
+
+-- ========================================================================
+-- LOCATION DATA
+-- ========================================================================
+
+function get_npc_location_name(npc_id)
+    local se_npc = alife_object(npc_id)
+    if not se_npc or not se_npc.m_game_vertex_id then
+        return "the Zone"
+    end
+
+    local success, level_name = pcall(function()
+        return alife():level_name(game_graph():vertex(se_npc.m_game_vertex_id):level_id())
+    end)
+
+    if success and level_name then
+        -- Clean up level names for readability
+        local readable_names = {
+            zaton = "Zaton",
+            jupiter = "Jupiter",
+            pripyat = "Pripyat",
+            labx8 = "Lab X8",
+            hospital = "Hospital",
+            red_forest = "Red Forest",
+            generators = "Generators",
+            underpass = "Underpass",
+            military_warehouses = "Military Warehouses",
+            dark_valley = "Dark Valley",
+            yantar = "Yantar",
+            rostok = "Rostok",
+            agroprom = "Agroprom",
+            garbage = "Garbage",
+            cordon = "Cordon",
+            jupiter_underground = "Jupiter Underground"
+        }
+        return readable_names[level_name] or level_name
+    end
+
+    return "the Zone"
+end
+
+function get_online_npcs_at_location(location_name)
+    -- Returns list of NPC IDs at a specific location
+    if not db or not db.OnlineStalkers then return {} end
+
+    local npcs_here = {}
+    for i = 1, #db.OnlineStalkers do
+        local npc_id = db.OnlineStalkers[i]
+        if get_npc_location_name(npc_id) == location_name then
+            table.insert(npcs_here, npc_id)
+        end
+    end
+    return npcs_here
+end
+
+function get_random_nearby_location(npc_id)
+    -- Returns a nearby known location name for conversation
+    local known_locations = {
+        "Rostok", "Yantar", "Pripyat", "Zaton", "Jupiter",
+        "Garbage", "Cordon", "Agroprom", "Red Forest"
+    }
+    return known_locations[math.random(#known_locations)]
+end
+
+-- ========================================================================
+-- WEATHER & TIME DATA
+-- ========================================================================
+
+-- Weather ID to readable name mapping
+local WEATHER_NAMES = {
+    -- Clear weather
+    ["default"] = "clear",
+    ["w_clear1"] = "clear",
+    ["w_clear2"] = "clear",
+    ["clear"] = "clear",
+
+    -- Cloudy
+    ["w_cloudy1"] = "cloudy",
+    ["w_cloudy2"] = "cloudy",
+    ["w_cloudy3"] = "overcast",
+    ["cloudy"] = "cloudy",
+    ["default_cloudy"] = "cloudy",
+
+    -- Rain
+    ["w_rain1"] = "rainy",
+    ["w_rain2"] = "pouring",
+    ["w_rain3"] = "stormy",
+    ["rain"] = "rainy",
+    ["default_rain"] = "rainy",
+
+    -- Fog
+    ["w_foggy1"] = "foggy",
+    ["w_foggy2"] = "heavy fog",
+    ["foggy"] = "foggy",
+
+    -- Special
+    ["post_process"] = "hazy",
+    ["indoor"] = "indoor",
+
+    -- Fallback patterns
+    ["storm"] = "stormy",
+    ["thunder"] = "stormy"
+}
+
+function get_current_weather()
+    if not level or not level.present() then
+        return "clear"
+    end
+
+    local success, weather_id = pcall(function()
+        return level.get_weather()
+    end)
+
+    if not success or not weather_id then
+        return "clear"
+    end
+
+    -- Look up readable name
+    local weather_name = WEATHER_NAMES[weather_id]
+
+    -- Fallback: Try to extract readable name from ID
+    if not weather_name then
+        -- Extract from patterns like "w_rain1" -> "rainy"
+        if weather_id:match("rain") then
+            weather_name = "rainy"
+        elseif weather_id:match("cloud") then
+            weather_name = "cloudy"
+        elseif weather_id:match("clear") then
+            weather_name = "clear"
+        elseif weather_id:match("fog") then
+            weather_name = "foggy"
+        elseif weather_id:match("storm") then
+            weather_name = "stormy"
+        else
+            weather_name = "unclear"  -- Unknown weather
+        end
+    end
+
+    return weather_name
+end
+
+function get_time_of_day()
+    if not level or not level.present() then
+        return "day"
+    end
+
+    local success, hours, minutes = pcall(function()
+        local h, m, s = level.get_time_hours(), level.get_time_minutes(), level.get_time_seconds()
+        return h, m
+    end)
+
+    if not success then
+        return "day"
+    end
+
+    if hours >= 5 and hours < 12 then
+        return "morning"
+    elseif hours >= 12 and hours < 18 then
+        return "afternoon"
+    elseif hours >= 18 and hours < 22 then
+        return "evening"
+    else
+        return "night"
+    end
+end
+
+function is_emission_recent()
+    -- Check if an emission happened recently (within last hour)
+    -- This would need integration with surge_manager if available
+    return false  -- Placeholder - needs surge_manager integration
+end
+
+-- ========================================================================
+-- NPC & FACTION DATA
+-- ========================================================================
+
+function get_npc_faction_readable(npc_id)
+    local se_npc = alife_object(npc_id)
+    if not se_npc then return "stalkers" end
+
+    local community = "stalker"
+    if se_npc.community then
+        local success, result = pcall(function() return se_npc:community() end)
+        if success and result then
+            community = result
+        end
+    end
+
+    -- Readable faction names (plural for conversations)
+    local faction_names = {
+        stalker = "Loners",
+        duty = "Duty",
+        freedom = "Freedom",
+        bandit = "Bandits",
+        ecologist = "Ecologists",
+        killer = "Mercenaries",
+        army = "Military",
+        monolith = "Monolith",
+        csky = "Clear Sky",
+        greh = "Sin",
+        isg = "ISG",
+        renegade = "Renegades"
+    }
+
+    return faction_names[community] or "stalkers"
+end
+
+function get_faction_relationship_descriptor(faction1, faction2)
+    -- Returns descriptive relationship: "allied", "neutral", "hostile"
+    local rel = game_relations.get_factions_relation(faction1, faction2)
+
+    if rel > 500 then
+        return "allied"
+    elseif rel < -500 then
+        return "hostile"
+    else
+        return "neutral"
+    end
+end
+
+function get_random_hostile_faction(my_faction)
+    -- Returns a random faction that is hostile to mine
+    local hostile_pairs = {
+        duty = {"freedom", "monolith", "bandit"},
+        freedom = {"duty", "monolith"},
+        stalker = {"bandit", "monolith", "killer"},
+        bandit = {"duty", "stalker", "ecologist"},
+        monolith = {"stalker", "duty", "freedom", "ecologist"},
+        ecologist = {"bandit", "monolith"}
+    }
+
+    local hostiles = hostile_pairs[my_faction]
+    if hostiles and #hostiles > 0 then
+        return hostiles[math.random(#hostiles)]
+    end
+    return "Monolith"  -- Default enemy
+end
+
+-- ========================================================================
+-- ECONOMY & ITEMS
+-- ========================================================================
+
+function get_random_trader_name()
+    local traders = {
+        "Sidorovich", "Barkeep", "Owl", "Hawaiian", "Sakharov",
+        "Snag", "Xenotech", "Loris", "Nitro"
+    }
+    return traders[math.random(#traders)]
+end
+
+function get_random_item_with_price()
+    -- Returns {item_name, base_price, category}
+    local items = {
+        -- Medical
+        {name = "Medkit", price = math.random(800, 1500), category = "medical"},
+        {name = "Bandage", price = math.random(200, 400), category = "medical"},
+        {name = "Anti-rad", price = math.random(300, 600), category = "medical"},
+
+        -- Ammo
+        {name = "9x19 rounds", price = math.random(50, 150), category = "ammo"},
+        {name = "5.45x39 rounds", price = math.random(100, 250), category = "ammo"},
+        {name = "12 gauge buckshot", price = math.random(80, 200), category = "ammo"},
+
+        -- Artifacts
+        {name = "Moonlight artifact", price = math.random(15000, 35000), category = "artifact"},
+        {name = "Goldfish artifact", price = math.random(20000, 45000), category = "artifact"},
+        {name = "Flame artifact", price = math.random(8000, 18000), category = "artifact"},
+
+        -- Gear
+        {name = "Gas mask filter", price = math.random(500, 1200), category = "gear"},
+        {name = "Night vision", price = math.random(8000, 15000), category = "gear"},
+        {name = "Detector", price = math.random(3000, 8000), category = "gear"},
+
+        -- Food/Drink
+        {name = "Vodka", price = math.random(150, 400), category = "food"},
+        {name = "Bread", price = math.random(50, 150), category = "food"},
+        {name = "Canned food", price = math.random(100, 300), category = "food"}
+    }
+
+    return items[math.random(#items)]
+end
+
+-- ========================================================================
+-- MUTANT & ENEMY DATA
+-- ========================================================================
+
+function get_random_mutant_type()
+    local mutants = {
+        {name = "Bloodsucker", threat = "high"},
+        {name = "Controller", threat = "high"},
+        {name = "Chimera", threat = "high"},
+        {name = "Pseudogiant", threat = "extreme"},
+        {name = "Burer", threat = "medium"},
+        {name = "Snork pack", threat = "medium"},
+        {name = "Pseudodog pack", threat = "medium"},
+        {name = "Flesh pack", threat = "low"},
+        {name = "Boar", threat = "low"}
+    }
+    return mutants[math.random(#mutants)]
+end
+
+function get_random_dangerous_location()
+    local dangerous_places = {
+        "Lab X8", "Lab X16", "Lab X18", "Radar", "Brain Scorcher",
+        "Red Forest", "Pripyat", "Jupiter Underground", "Dark Valley labs"
+    }
+    return dangerous_places[math.random(#dangerous_places)]
+end
+
+-- ========================================================================
+-- CONVERSATION CONTEXT BUILDERS
+-- ========================================================================
+
+function build_price_gossip_context()
+    -- Build context for price complaint/gossip conversation
+    local item_data = get_random_item_with_price()
+    local price_variance = math.random(80, 120) / 100  -- 80% to 120% of base
+    local previous_variance = math.random(60, 90) / 100  -- Previous was cheaper
+
+    return {
+        trader = get_random_trader_name(),
+        item = item_data.name,
+        category = item_data.category,
+        current_price = math.floor(item_data.price * price_variance),
+        previous_price = math.floor(item_data.price * previous_variance),
+        price_change_percent = math.floor((price_variance - previous_variance) * 100)
+    }
+end
+
+function build_location_chatter_context()
+    -- Build context for location-based conversation
+    local location = get_random_nearby_location()
+    local mutant = get_random_mutant_type()
+
+    return {
+        location = location,
+        mutant_type = mutant.name,
+        threat_level = mutant.threat,
+        time_of_day = get_time_of_day(),
+        npc_count = math.random(2, 8)  -- Approximate NPCs at location
+    }
+end
+
+function build_faction_tension_context(speaker_faction)
+    -- Build context for faction conflict discussion
+    local enemy_faction = get_random_hostile_faction(speaker_faction)
+
+    return {
+        our_faction = get_npc_faction_readable(nil),  -- Will be filled by caller
+        enemy_faction = enemy_faction,
+        recent_battle = math.random(100) > 70,  -- 30% chance of recent battle
+        casualties = math.random(1, 5),
+        location = get_random_nearby_location()
+    }
+end
+
+function build_survival_story_context()
+    -- Build context for close call / survival story
+    return {
+        danger = math.random(100) > 50 and get_random_mutant_type().name or "anomaly field",
+        location = get_random_dangerous_location(),
+        time_survived = math.random(1, 10),  -- seconds left
+        injury_level = ({"minor", "serious", "critical"})[math.random(3)]
+    }
+end
+
+function build_weather_comment_context()
+    return {
+        weather = get_current_weather(),
+        time = get_time_of_day(),
+        is_dangerous = math.random(100) > 70  -- Random chance weather is problematic
+    }
+end
+
+-- ========================================================================
+-- EXPORTS
+-- ========================================================================
+
+-- Export all functions for use by other scripts

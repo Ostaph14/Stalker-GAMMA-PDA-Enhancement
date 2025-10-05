@@ -13,7 +13,7 @@
 local SCRIPT_VERSION = "0.2.4_compat"
 
 -- Enable debug logging
-local DEBUG_MODE = false
+local DEBUG_MODE = true
 
 local function dprintf(fmt, ...)
     if DEBUG_MODE then
@@ -131,7 +131,7 @@ local function patch_sim_offline_combat()
         dprintf("  - Patched simulate_battle()")
     end
 
-    -- Patch: set_battle_outcome - Add SOS messages
+    -- Patch: set_battle_outcome - Add SOS messages + ZONE ALIVE INTEGRATION
     local original_set_battle_outcome = sim_offline_combat.set_battle_outcome
     if original_set_battle_outcome then
         sim_offline_combat.set_battle_outcome = function(victory, id_1, id_2, squad_1, squad_2, community_1, community_2, se_attacker, se_victim, damage)
@@ -141,6 +141,11 @@ local function patch_sim_offline_combat()
             -- Add our SOS news on defender victory
             if not victory then
                 dynamic_news_manager.get_dynamic_news():SOSBattleOffline(squad_2, squad_1)
+            end
+
+            -- ZONE ALIVE: Add offline combat events to rumor queue
+            if z_zone_alive_events and z_zone_alive_events.add_zone_event_from_offline_combat then
+                z_zone_alive_events.add_zone_event_from_offline_combat(victory, se_attacker, se_victim, squad_1, squad_2)
             end
         end
         dprintf("  - Patched set_battle_outcome()")
@@ -197,6 +202,9 @@ end
 --=============================================================================
 -- Module: Campfire Patches
 --=============================================================================
+local campfire_cooldowns = {}  -- Track last campfire message per NPC
+local last_global_campfire_message = nil  -- Global cooldown to prevent multiple NPCs talking at once
+
 local function patch_axr_turn_on_campfire()
     dprintf("Patching axr_turn_on_campfire...")
 
@@ -216,6 +224,31 @@ local function patch_axr_turn_on_campfire()
         return banter, reply
     end
 
+    -- Helper: Check if NPC is on cooldown
+    local function can_send_campfire_message(npc_id)
+        -- Global cooldown check (15 minutes between ANY campfire messages)
+        if last_global_campfire_message then
+            local now = game.get_game_time()
+            local elapsed = now:diffSec(last_global_campfire_message)
+            if elapsed < (15 * 60) then
+                return false  -- Too soon since last campfire message from ANYONE
+            end
+        end
+
+        -- Per-NPC cooldown check
+        if campfire_cooldowns[npc_id] then
+            local now = game.get_game_time()
+            local elapsed = now:diffSec(campfire_cooldowns[npc_id])
+
+            -- 30 minute cooldown per NPC to prevent spam
+            if elapsed < (30 * 60) then
+                return false
+            end
+        end
+
+        return true
+    end
+
     -- Find the evaluator update function (this is tricky without seeing vanilla code)
     -- We'll patch the act_turn_on_campfire action's execute method instead
     if axr_turn_on_campfire.act_turn_on_campfire and axr_turn_on_campfire.act_turn_on_campfire.execute then
@@ -225,22 +258,41 @@ local function patch_axr_turn_on_campfire()
             -- Call original function
             original_execute(self)
 
-            -- 9% chance to send campfire banter
-            if math.random(1, 100) > 91 and dynamic_news_helper and dynamic_news_helper.send_tip then
-                local npc = self.object
-                if npc and npc.character_name then
-                    local banter, reply = get_random_banter_pair()
-                    if banter and banter ~= "nil" then
-                        local success, name = pcall(function() return npc:character_name() end)
-                        local success2, icon = pcall(function() return npc:character_icon() end)
-                        if success and name and success2 and icon then
-                            dynamic_news_helper.send_tip(banter, name, math.random(12, 23), 10, icon, "beep_1", "npc")
-                        end
+            local npc = self.object
+            if not npc or not npc.character_name then
+                return
+            end
+
+            local npc_id = npc:id()
+
+            -- First check: Very low probability (1% chance) to even attempt
+            if math.random(1, 100) > 99 then
+                return  -- 99% of the time, don't even bother checking
+            end
+
+            -- Second check: Global + per-NPC cooldown
+            if not can_send_campfire_message(npc_id) then
+                return
+            end
+
+            -- Third check passed - send the message
+            if dynamic_news_helper and dynamic_news_helper.send_tip then
+                local banter, reply = get_random_banter_pair()
+                if banter and banter ~= "nil" then
+                    local success, name = pcall(function() return npc:character_name() end)
+                    local success2, icon = pcall(function() return npc:character_icon() end)
+                    if success and name and success2 and icon then
+                        dynamic_news_helper.send_tip(banter, name, math.random(12, 23), 10, icon, "beep_1", "npc")
+
+                        -- Update BOTH global and per-NPC cooldown timestamps
+                        last_global_campfire_message = game.get_game_time()
+                        campfire_cooldowns[npc_id] = game.get_game_time()
+                        dprintf("  - Sent campfire message from %s (global + NPC cooldown active)", name)
                     end
                 end
             end
         end
-        dprintf("  - Patched act_turn_on_campfire:execute()")
+        dprintf("  - Patched act_turn_on_campfire:execute() with dual cooldown system")
     end
 
     dprintf("axr_turn_on_campfire patching complete")
@@ -258,11 +310,10 @@ local function patch_tasks_guide()
         return false
     end
 
-    -- This script only uses dynamic_news_helper.GetPointDescription() which is
-    -- already available from dynamic_news_manager, so no patching needed.
-    -- The functions are called directly and will work as long as dynamic_news_manager loads.
+    -- No patching needed - we now include the full tasks_guide.script file
+    -- which has the correct implementation
 
-    dprintf("tasks_guide requires no patching (uses helper functions only)")
+    dprintf("tasks_guide loaded (full file included, no patch needed)")
     return true
 end
 
@@ -312,10 +363,66 @@ local function apply_all_patches()
 end
 
 --=============================================================================
+-- Zone Alive Integration
+--=============================================================================
+local zone_alive_initialized = false
+
+function init_zone_alive()
+    if zone_alive_initialized then
+        return
+    end
+
+    -- Check if MCM setting exists and is enabled
+    if ui_mcm and ui_mcm.get("zone_alive/enable") == false then
+        dprintf("[Zone Alive] Disabled in MCM")
+        return
+    end
+
+    -- Initialize Zone Alive core
+    if z_zone_alive_core then
+        local success, err = pcall(function()
+            z_zone_alive_core.init()
+        end)
+
+        if success then
+            dprintf("[Zone Alive] Core initialized")
+        else
+            dprintf("[Zone Alive] ERROR initializing core: %s", tostring(err))
+            return
+        end
+    else
+        dprintf("[Zone Alive] WARNING: Core module not found")
+        return
+    end
+
+    -- Initialize event detection
+    if z_zone_alive_events then
+        local success, err = pcall(function()
+            z_zone_alive_events.init()
+        end)
+
+        if success then
+            dprintf("[Zone Alive] Events initialized")
+        else
+            dprintf("[Zone Alive] ERROR initializing events: %s", tostring(err))
+            return
+        end
+    else
+        dprintf("[Zone Alive] WARNING: Events module not found")
+    end
+
+    zone_alive_initialized = true
+    dprintf("[Zone Alive] System fully initialized")
+end
+
+--=============================================================================
 -- Game Start Hook
 --=============================================================================
 function on_game_start()
     -- Apply patches after all other scripts have loaded
     -- The z_ prefix ensures we load last
     apply_all_patches()
+
+    -- Initialize Zone Alive system
+    init_zone_alive()
 end

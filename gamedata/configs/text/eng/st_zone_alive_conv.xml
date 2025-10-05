@@ -1,0 +1,1204 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+
+<!-- =====================================================================
+     ZONE ALIVE - Dynamic Conversation Templates
+     Version: 0.3.0
+     Total Messages: 1000+
+
+     Naming Convention: st_conv_[topic]_[emotion]_[stage]_[variant]
+     ===================================================================== -->
+
+<!-- =====================================================================
+     COMBAT LEGENDARY KILL - Pride/Skepticism/Validation
+     Stages: 5 (Announcement, Skepticism, Defense, Witness, Acceptance)
+     ===================================================================== -->
+
+<!-- Stage 0: Announcement (Pride) -->
+<string id="st_conv_combat_legendary_kill_pride_0_1">
+    <text>Killed a $what in $where. Solo.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_2">
+    <text>Took down a $what. $where. By myself.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_3">
+    <text>Just bagged a $what in $where. No backup needed.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_4">
+    <text>$what's dead. $where. Solo kill.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_5">
+    <text>Dropped a $what solo near $where. Still alive, somehow.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_6">
+    <text>Got a $what kill. Alone. $where. Yeah, I know how it sounds.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_7">
+    <text>$what corpse in $where with my name on it. Solo work.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_8">
+    <text>Killed a $what by myself. $where. Check the body if you don't believe me.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_9">
+    <text>Just solo'd a $what. $where. My gun's still hot.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_pride_0_10">
+    <text>One $what down. One stalker standing. $where.</text>
+</string>
+
+<!-- Stage 1: Skepticism -->
+<string id="st_conv_combat_legendary_kill_skeptic_1_1">
+    <text>Bullshit. No way you killed a $what alone.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_2">
+    <text>Yeah right. You'd need a fucking tank to solo a $what.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_3">
+    <text>Solo? A $what? I call bullshit.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_4">
+    <text>$what kills require squads. You're full of shit.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_5">
+    <text>I don't buy it. $what would tear you apart.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_6">
+    <text>Pics or it didn't happen. $what solo is suicide.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_7">
+    <text>You expect me to believe you solo'd a $what? Come on.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_8">
+    <text>That's a nice story. Now tell me what actually happened.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_9">
+    <text>$what solo? Suuuure. And I'm the Zone's tooth fairy.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_10">
+    <text>I've seen veterans die to $what in groups. You're lying.</text>
+</string>
+
+<!-- Stage 2: Defense -->
+<string id="st_conv_combat_legendary_kill_defense_2_1">
+    <text>Check the corpse yourself if you don't believe me.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_2">
+    <text>Or good positioning and a shotgun. Your call.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_3">
+    <text>Body's still warm in $where. Go look.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_4">
+    <text>Believe what you want. I'm still here, it's still dead.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_5">
+    <text>Two heads, both full of buckshot. Check it.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_6">
+    <text>I've got the bullet holes to prove it. You've got excuses.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_7">
+    <text>My medkits are empty and my ammo's gone. That sound like bullshit?</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_8">
+    <text>Whatever. Corpse is in $where when you're ready to apologize.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_9">
+    <text>Used 47 rounds. Want to count the holes?</text>
+</string>
+<string id="st_conv_combat_legendary_kill_defense_2_10">
+    <text>I didn't survive to argue with you. Go verify it yourself.</text>
+</string>
+
+<!-- Stage 3: Witness Validation -->
+<string id="st_conv_combat_legendary_kill_witness_3_1">
+    <text>I saw it. $who's gun was still smoking. It's real.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_2">
+    <text>Can confirm. $what corpse is in $where. $who ain't lying.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_3">
+    <text>Was there. Saw the whole thing. $who actually did it.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_4">
+    <text>Two heads, both dead. $who's telling the truth.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_5">
+    <text>I watched it happen. $who is either lucky or skilled. Probably both.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_6">
+    <text>Body's fresh. $who killed it maybe an hour ago. I was there.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_7">
+    <text>Verified. $what's dead, $who's alive. Math checks out.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_8">
+    <text>Saw $who limping back covered in blood. $what's blood. It happened.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_9">
+    <text>I was skeptical too. Then I saw the corpse. $who did it.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_10">
+    <text>Counted the bullet casings. $who used every round. Real fight.</text>
+</string>
+
+<!-- Stage 4: Acceptance/Respect -->
+<string id="st_conv_combat_legendary_kill_respect_4_1">
+    <text>Damn... alright, I believe you. Drinks on me tonight.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_2">
+    <text>Fuck me. You actually did it. Respect.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_3">
+    <text>Okay, I was wrong. That's impressive. And terrifying.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_4">
+    <text>Alright, alright. You're either brave or insane. Probably both.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_5">
+    <text>Solo $what kill. Didn't think it was possible. My mistake.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_6">
+    <text>You've got balls. Or you're stupid. Either way, respect.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_7">
+    <text>That's one for the history books. Well done.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_8">
+    <text>I've been in the Zone 5 years and never solo'd a $what. Respect.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_9">
+    <text>Zone's got another legend. Drinks are on me.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_respect_4_10">
+    <text>You're either getting good or the Zone's getting lazy. Either way, impressive.</text>
+</string>
+
+<!-- Stage 4: Humor/Reality Check -->
+<string id="st_conv_combat_legendary_kill_humor_4_1">
+    <text>You're buying. I spent all my medkit money on not dying.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_2">
+    <text>Great. Now everyone's gonna try solo $what kills. Thanks for raising the bar.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_3">
+    <text>Solo $what kill. Retirement fund secured. Or funeral fund. Probably funeral.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_4">
+    <text>Next time bring backup. Show-off.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_5">
+    <text>My squad's gonna hear about this. They're gonna want proof.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_6">
+    <text>Cool story. Now go clean your gun before it jams.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_7">
+    <text>You almost died though, right? RIGHT?</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_8">
+    <text>Legend today, corpse tomorrow. Typical Zone.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_9">
+    <text>Three guys tried that $what before you. Found their gear. Thanks for not adding to the pile.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_humor_4_10">
+    <text>And here I am proud of killing pseudodogs. Fuck.</text>
+</string>
+
+<!-- =====================================================================
+     SURVIVAL STORY - Blowout/Near-Death
+     Stages: 4 (Incident, Question, Advice, Mentorship)
+     ===================================================================== -->
+
+<!-- Stage 0: Incident (Relief) -->
+<string id="st_conv_survival_story_relief_0_1">
+    <text>Emission caught me in $where. Made it to shelter with 10 seconds left.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_2">
+    <text>Blowout hit while I was in the open. Barely found cover in time.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_3">
+    <text>Survived my $count emission. Still can't believe it.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_4">
+    <text>Was crossing $where when emission warning hit. Closest call of my life.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_5">
+    <text>Found a basement with 5 seconds to spare. Heart's still pounding.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_6">
+    <text>Emission caught me mid-looting. Ditched the gear and ran. Still alive.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_7">
+    <text>Blowout in $where. Shelter was further than I thought. Made it anyway.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_8">
+    <text>Dove into a basement covered in rats during emission. Better than dead.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_9">
+    <text>Warning came late. Had to sprint through anomaly field to reach shelter.</text>
+</string>
+<string id="st_conv_survival_story_relief_0_10">
+    <text>Survived emission outside. Don't ask how. I don't know either.</text>
+</string>
+
+<!-- Stage 1: Rookie Question (Curiosity) -->
+<string id="st_conv_survival_story_curious_1_1">
+    <text>How do you stay calm? I would've panicked.</text>
+</string>
+<string id="st_conv_survival_story_curious_1_2">
+    <text>What goes through your head when the warning hits?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_3">
+    <text>10 seconds?! How is that even possible?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_4">
+    <text>Do you ever get used to emissions?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_5">
+    <text>What if there's no shelter nearby?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_6">
+    <text>How many emissions have you survived?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_7">
+    <text>Were you scared?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_8">
+    <text>I heard emissions fry your brain. Is that true?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_9">
+    <text>What's the trick to surviving blowouts?</text>
+</string>
+<string id="st_conv_survival_story_curious_1_10">
+    <text>Better to run or hide?</text>
+</string>
+
+<!-- Stage 2: Veteran Wisdom -->
+<string id="st_conv_survival_story_wisdom_2_1">
+    <text>Panic is how you die. I've been through $count emissions. You learn to run straight, not fast.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_2">
+    <text>Scared? Every time. Fear keeps you sharp. Panic kills.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_3">
+    <text>Never get used to it. You just get better at not dying.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_4">
+    <text>No shelter? Find one. Make one. Or pray. Usually pray.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_5">
+    <text>Trick is simple: Always know where the nearest shelter is. Always.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_6">
+    <text>10 seconds is a lifetime if you don't waste it panicking.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_7">
+    <text>Brain damage? Probably. But I'm alive to worry about it later.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_8">
+    <text>Run toward shelter, not away from emission. Zone doesn't care about your fear.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_9">
+    <text>What goes through my head? Shelter location, distance, time. Math saves lives.</text>
+</string>
+<string id="st_conv_survival_story_wisdom_2_10">
+    <text>I count emissions like medals. Each one means I'm still here.</text>
+</string>
+
+<!-- Stage 3: Squad Experience (Mentorship) -->
+<string id="st_conv_survival_story_mentorship_3_1">
+    <text>Lost my whole squad to a blowout because they scattered. Stay together.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_2">
+    <text>Seen rookies freeze during warnings. Don't be that rookie.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_3">
+    <text>Best advice I got: Treat every emission like it's your last. Because it might be.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_4">
+    <text>Watched a veteran survive 20 emissions. Died on 21st because he got cocky.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_5">
+    <text>Zone gives you 2 minutes warning for a 3-minute killzone. Do the math.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_6">
+    <text>Emissions don't discriminate. Rookie or Legend, dead is dead.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_7">
+    <text>If you survive 5 emissions, you're lucky. If you survive 10, you're good. If you survive 20, you're paranoid.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_8">
+    <text>Never trust the timing. Always assume you have less time than they say.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_9">
+    <text>Emissions are the Zone's way of keeping the population down. Don't help it.</text>
+</string>
+<string id="st_conv_survival_story_mentorship_3_10">
+    <text>You'll know you're a veteran when emissions don't scare you. But they should.</text>
+</string>
+
+<!-- =====================================================================
+     ECONOMIC GOSSIP - Artifact Sales/Trading
+     Stages: 3 (Announcement, Reaction, Market Analysis)
+     ===================================================================== -->
+
+<!-- Stage 0: Sale Announcement (Excitement) -->
+<string id="st_conv_economic_gossip_excitement_0_1">
+    <text>Sold a $what to Sakharov for $value rubles. Easiest money of my life.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_2">
+    <text>Just cashed in a $what. $value rubles. Drinks on me.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_3">
+    <text>$what fetch $value now? Fuck, I'm in the wrong business.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_4">
+    <text>Found a $what. Sold it for $value. Retirement fund secured.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_5">
+    <text>$value for one $what. Zone's paying well today.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_6">
+    <text>Artifact hunting paid off. $what sold for $value.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_7">
+    <text>Never thought I'd see $value for a $what. Times are good.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_8">
+    <text>Sakharov's buying $what for $value. Get your artifacts ready.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_9">
+    <text>Made $value off one artifact run. $what prices are insane.</text>
+</string>
+<string id="st_conv_economic_gossip_excitement_0_10">
+    <text>$what = $value rubles. Do the math. I'm going back to Electro.</text>
+</string>
+
+<!-- Stage 1: Envy/Comparison -->
+<string id="st_conv_economic_gossip_envy_1_1">
+    <text>$value?! I got half that last week for the same artifact!</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_2">
+    <text>You're shitting me. I sold my $what for way less.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_3">
+    <text>Fuck. I knew I should've waited to sell mine.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_4">
+    <text>Lucky bastard. My $what only fetched 20k.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_5">
+    <text>Prices went up? Great. After I sold mine cheap.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_6">
+    <text>$value? I'm getting ripped off by Sidorovich.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_7">
+    <text>That's double what I made. Who'd you sell to?</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_8">
+    <text>Timing is everything. And apparently I have none.</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_9">
+    <text>I hate you. But also, where'd you find it?</text>
+</string>
+<string id="st_conv_economic_gossip_envy_1_10">
+    <text>Some of us risk our lives for scraps. Others get $value.</text>
+</string>
+
+<!-- Stage 2: Market Analysis -->
+<string id="st_conv_economic_gossip_analysis_2_1">
+    <text>Prices are up across the board. More stalkers dying, fewer artifacts.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_2">
+    <text>Ecologists are desperate. Supply shortage after the last blowout.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_3">
+    <text>Market's hot right now. Get your artifacts while traders are buying.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_4">
+    <text>Heard Sakharov's funding doubled. He's paying premium for everything.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_5">
+    <text>Supply and demand. Economics 101. More corpses, higher prices.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_6">
+    <text>Zone's killing faster than we can loot. Artifact prices skyrocketing.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_7">
+    <text>Military's cracking down on smuggling. Black market prices doubled.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_8">
+    <text>Faction war's disrupting trade routes. Prices reflect the chaos.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_9">
+    <text>Smart traders are hoarding artifacts. Waiting for prices to peak.</text>
+</string>
+<string id="st_conv_economic_gossip_analysis_2_10">
+    <text>This won't last. Enjoy the gold rush while it's here.</text>
+</string>
+
+<!-- =====================================================================
+     ROOKIE ROASTING - Veteran Mockery
+     Stages: 2 (Question, Sarcastic Answer)
+     ===================================================================== -->
+
+<!-- Stage 0: Rookie Question (Naive) -->
+<string id="st_conv_rookie_roasting_naive_0_1">
+    <text>Why do we throw bolts at anomalies? Can't we just use detectors?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_2">
+    <text>Is it true artifacts make you immune to radiation?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_3">
+    <text>How much do I need to bribe the Military checkpoint?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_4">
+    <text>Why doesn't Duty just nuke the Zone?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_5">
+    <text>Can I solo X18? It's just a lab, right?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_6">
+    <text>Bloodsuckers are invisible. How do you even fight them?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_7">
+    <text>Is the Brain Scorcher really that dangerous?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_8">
+    <text>What's the easiest way to make money in the Zone?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_9">
+    <text>Do I really need anti-rad? Can't I just run fast?</text>
+</string>
+<string id="st_conv_rookie_roasting_naive_0_10">
+    <text>How hard can Controller fights be? It's just mind tricks.</text>
+</string>
+
+<!-- Stage 1: Veteran Sarcasm -->
+<string id="st_conv_rookie_roasting_sarcastic_1_1">
+    <text>Detectors don't show HOW anomalies move. Bolts do. Learn the difference or die.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_2">
+    <text>Yeah, and bloodsuckers are just misunderstood puppies. Try it and find out.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_3">
+    <text>Your gun, your gear, and your dignity. Then they shoot you anyway.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_4">
+    <text>Because last time someone fucked with the nuclear plant, we got THIS. You want Zone 2.0?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_5">
+    <text>Solo X18? Sure. Make sure someone knows where to find your corpse.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_6">
+    <text>Shoot where you HEAR them, not where you SEE them. Because you won't see them.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_7">
+    <text>Brain Scorcher? Nah, it's called that ironically. Go ahead, walk right in.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_8">
+    <text>Looting corpses. Yours will contribute to the economy too, eventually.</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_9">
+    <text>Running fast from radiation. Brilliant. Why didn't veterans think of that?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_10">
+    <text>'Just mind tricks' that make you shoot yourself. But go ahead, test it.</text>
+</string>
+
+<!-- =====================================================================
+     DRUNK PHILOSOPHY - Campfire Wisdom
+     Stages: 3 (Drunk Question, Response, Absurdity)
+     ===================================================================== -->
+
+<!-- Stage 0: Drunk Question -->
+<string id="st_conv_drunk_philosophy_drunk_0_1">
+    <text>What if WE'RE the anomaly and the Zone is normal?</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_2">
+    <text>Maybe it's the vodka, but I think that bloodsucker was trying to communicate.</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_3">
+    <text>If the Zone is alive, does it dream? And are we in its nightmare?</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_4">
+    <text>What if artifacts are the Zone's way of saying sorry for all the death?</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_5">
+    <text>Hear me out: What if Monolith is right and we're all wrong?</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_6">
+    <text>Anomalies are just physics having a bad day. Change my mind.</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_7">
+    <text>The Zone makes more sense when you're drunk. That should tell you everything.</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_8">
+    <text>What if emissions are the Zone sneezing? Like, we're just germs to it.</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_9">
+    <text>I've had so much vodka I can't tell if that's a Controller or an angry Duty member.</text>
+</string>
+<string id="st_conv_drunk_philosophy_drunk_0_10">
+    <text>Serious question: If I drink enough, will radiation just... give up?</text>
+</string>
+
+<!-- Stage 1: Skeptical Response -->
+<string id="st_conv_drunk_philosophy_skeptic_1_1">
+    <text>You're drunk.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_2">
+    <text>Put the vodka down and back away slowly.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_3">
+    <text>That's the alcohol talking. And it's saying stupid shit.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_4">
+    <text>I've heard dumber things. But not many.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_5">
+    <text>You need sleep. Or more vodka. Definitely not philosophy.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_6">
+    <text>Zone's not alive. It's just radioactive and trying to kill us. Simple.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_7">
+    <text>That's... actually not the worst theory I've heard. Still stupid though.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_8">
+    <text>Buddy, the only thing communicating is your liver. And it's saying 'stop'.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_9">
+    <text>Go to bed. We'll pretend this conversation never happened.</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_10">
+    <text>I'm not drunk enough for this conversation.</text>
+</string>
+
+<!-- Stage 2: Reluctant Agreement/More Absurdity -->
+<string id="st_conv_drunk_philosophy_absurd_2_1">
+    <text>Doesn't make me wrong though. *burp*</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_2">
+    <text>You know what? Fuck it. Pass the bottle. I'm joining you in crazy town.</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_3">
+    <text>Cheeki breeki, comrade. *falls over*</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_4">
+    <text>If anomalies are caused by psi-emissions, and vodka causes hallucinations, are we all just drunk?</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_5">
+    <text>Tomorrow you'll regret this. But tonight? Tonight you're a philosopher.</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_6">
+    <text>The Zone doesn't make sense sober. So why try?</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_7">
+    <text>I'm writing this down. Then burning it. But it's profound.</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_8">
+    <text>After enough vodka, even Duty vs Freedom makes sense. Then you sober up and it's bullshit again.</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_9">
+    <text>You're either a genius or an idiot. Vodka makes both look the same.</text>
+</string>
+<string id="st_conv_drunk_philosophy_absurd_2_10">
+    <text>Campfire philosophy: Where dumb ideas sound smart at 2 AM.</text>
+</string>
+
+<!-- =====================================================================
+     FACTION DEBATE - Duty vs Freedom
+     Stages: 4 (Position, Counter, Heated, Third Party)
+     ===================================================================== -->
+
+<!-- Stage 0: Duty Position (Conviction) -->
+<string id="st_conv_faction_debate_conviction_0_1">
+    <text>The Zone must be contained. Leaving it unchecked is suicide for humanity.</text>
+</string>
+<string id="st_conv_faction_debate_conviction_0_2">
+    <text>Freedom's anarchist bullshit will doom us all. Discipline saves lives.</text>
+</string>
+<string id="st_conv_faction_debate_conviction_0_3">
+    <text>We're the only thing standing between the Zone and civilian populations.</text>
+</string>
+<string id="st_conv_faction_debate_conviction_0_4">
+    <text>Duty exists because someone has to. Freedom exists to get high and shoot at us.</text>
+</string>
+<string id="st_conv_faction_debate_conviction_0_5">
+    <text>Containment isn't oppression. It's survival. Freedom doesn't get that.</text>
+</string>
+
+<!-- Stage 0: Freedom Position (Conviction) -->
+<string id="st_conv_faction_debate_rebellion_0_1">
+    <text>Contained? You mean oppressed. The Zone is humanity's next evolution.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_0_2">
+    <text>Duty's fascist checkpoints kill more stalkers than mutants do.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_0_3">
+    <text>No one owns the Zone. Duty's trying to control what they don't understand.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_0_4">
+    <text>Free access to the Zone. That's what Freedom fights for. Not Duty's boot.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_0_5">
+    <text>The Zone's a gift. Duty wants to destroy it. We want to understand it.</text>
+</string>
+
+<!-- Stage 1: Heated Counter -->
+<string id="st_conv_faction_debate_anger_1_1">
+    <text>Evolution?! Tell that to the families of stalkers killed by your 'evolution'!</text>
+</string>
+<string id="st_conv_faction_debate_anger_1_2">
+    <text>Fascist?! We're keeping the Zone from consuming cities!</text>
+</string>
+<string id="st_conv_faction_debate_anger_1_3">
+    <text>Your 'gift' has killed thousands. Some fucking gift.</text>
+</string>
+<string id="st_conv_faction_debate_anger_1_4">
+    <text>Free access? More like free corpses. Your ideology is a death sentence.</text>
+</string>
+<string id="st_conv_faction_debate_anger_1_5">
+    <text>Oppression? Try responsibility. Something you'd know nothing about.</text>
+</string>
+
+<!-- Stage 2: Escalation -->
+<string id="st_conv_faction_debate_rage_2_1">
+    <text>At least we're not bootlicking authoritarians hiding behind 'duty'.</text>
+</string>
+<string id="st_conv_faction_debate_rage_2_2">
+    <text>Better dead free than alive under your checkpoints.</text>
+</string>
+<string id="st_conv_faction_debate_rage_2_3">
+    <text>Duty's killed more innocents than they've saved. Prove me wrong.</text>
+</string>
+<string id="st_conv_faction_debate_rage_2_4">
+    <text>Your 'containment' is just fear. Freedom doesn't fear the Zone.</text>
+</string>
+<string id="st_conv_faction_debate_rage_2_5">
+    <text>You're no better than the Military. Just with a better PR team.</text>
+</string>
+
+<!-- Stage 3: Third Party Cynicism -->
+<string id="st_conv_faction_debate_cynical_3_1">
+    <text>Both of you shut up. Zone doesn't care about your politics. It kills everyone equally.</text>
+</string>
+<string id="st_conv_faction_debate_cynical_3_2">
+    <text>Duty and Freedom have been arguing for years. Zone's still here. So's the death count.</text>
+</string>
+<string id="st_conv_faction_debate_cynical_3_3">
+    <text>You're both idiots. Different flavors, same stupidity.</text>
+</string>
+<string id="st_conv_faction_debate_cynical_3_4">
+    <text>While you two argue ideology, Loners are making money. Priorities.</text>
+</string>
+<string id="st_conv_faction_debate_cynical_3_5">
+    <text>Duty wants control. Freedom wants chaos. I want to not die. We're not the same.</text>
+</string>
+
+<!-- ======================================================================
+     ZONE MYTHOLOGY - Creepy Events (100 messages, 5 stages)
+     ====================================================================== -->
+
+<!-- Stage 0: Initial Report (Fear/Unease) -->
+<string id="st_conv_zone_mythology_fear_0_1">
+    <text>Saw something in the fog near $where. Not a mutant. Something else.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_2">
+    <text>The Zone is... different today. Wrong. Can you feel it?</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_3">
+    <text>Monolith chanting. No stalkers around. Just... voices.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_4">
+    <text>Found a campfire. Still warm. No bodies. No tracks. Nothing.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_5">
+    <text>Radio picked up something in $where. Not Russian. Not any language.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_6">
+    <text>Anomaly moved. I swear it followed me for three hundred meters.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_7">
+    <text>Trees in Pripyat are growing faster. They weren't there yesterday.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_8">
+    <text>Something knocked on my shelter door. Three times. We're in the Red Forest.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_9">
+    <text>Detector went haywire near $where. No artifacts. Just screaming.</text>
+</string>
+<string id="st_conv_zone_mythology_fear_0_10">
+    <text>The Zone's expanding. I checked the old maps. We're five klicks deeper than last year.</text>
+</string>
+
+<!-- Stage 1: Skepticism/Dismissal -->
+<string id="st_conv_zone_mythology_skeptic_1_1">
+    <text>You're seeing things. Radiation does that.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_2">
+    <text>Sure, and I saw the Wish Granter selling artifacts at Rostok.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_3">
+    <text>Lay off the vodka, stalker. Zone's dangerous enough without ghost stories.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_4">
+    <text>Controllers mess with your head. You probably walked past one.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_5">
+    <text>Everyone who stays too long starts seeing shit. Get out for a week.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_6">
+    <text>If weird shit killed stalkers, we'd all be dead. Relax.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_7">
+    <text>Zone psychology 101: Your brain invents patterns in chaos.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_8">
+    <text>Next you'll tell me Strelok is alive and living in the Brain Scorcher.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_9">
+    <text>I've been here eight years. Seen nothing supernatural. Just death.</text>
+</string>
+<string id="st_conv_zone_mythology_skeptic_1_10">
+    <text>The Zone is bad enough without making up new horrors.</text>
+</string>
+
+<!-- Stage 2: Supporting Evidence/Corroboration -->
+<string id="st_conv_zone_mythology_witness_2_1">
+    <text>Wait. I heard the same thing. Week ago. Same location.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_2">
+    <text>Not alone. Three guys from Freedom reported the exact same thing.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_3">
+    <text>Sidorovich mentioned a squad went silent near there. No bodies found.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_4">
+    <text>Military pulled back from that sector. Didn't say why. Just... left.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_5">
+    <text>I've got footage. My helmet cam picked something up. You won't like it.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_6">
+    <text>Ecologists sealed off that area. Said 'anomalous readings'. Refused to elaborate.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_7">
+    <text>Old-timer at the bar mentioned the same phenomenon. Happened in 2012 too.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_8">
+    <text>Duty sent a recon squad. Only one came back. Won't talk about what he saw.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_9">
+    <text>Check the PDA logs. Seven different stalkers, seven identical reports.</text>
+</string>
+<string id="st_conv_zone_mythology_witness_2_10">
+    <text>I didn't believe it either. Until I went there. Now I do.</text>
+</string>
+
+<!-- Stage 3: Escalation/Theory -->
+<string id="st_conv_zone_mythology_theory_3_1">
+    <text>What if the Zone is... aware? What if it's testing us?</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_2">
+    <text>Scientists say the Noosphere is evolving. Maybe it's true.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_3">
+    <text>The Zone took Monolith's mind. Maybe it wants more.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_4">
+    <text>What if the emission wasn't an accident? What if it was a message?</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_5">
+    <text>Old maps show structures that don't exist. New maps show things that do. The Zone is building something.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_6">
+    <text>Artifacts are getting smarter. They know when you're looking for them.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_7">
+    <text>Every blowout, the Zone grows. Every growth, more anomalies. It's accelerating.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_8">
+    <text>What if we're not exploring the Zone? What if it's studying us?</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_9">
+    <text>Monolith didn't go insane. They understood something we don't. And it broke them.</text>
+</string>
+<string id="st_conv_zone_mythology_theory_3_10">
+    <text>The Zone doesn't follow physics anymore. It makes its own rules now.</text>
+</string>
+
+<!-- Stage 4: Resolution (Fear/Acceptance) -->
+<string id="st_conv_zone_mythology_acceptance_4_1">
+    <text>Doesn't matter if it's real. In the Zone, fear kills you either way.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_2">
+    <text>I'm leaving. Not tomorrow. Now. This place isn't worth it anymore.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_3">
+    <text>We adapt or we die. Been true since the first emission. Still true now.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_4">
+    <text>Fine. Stick together. No one goes to $where alone. Ever.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_5">
+    <text>Mark it on the map. Restricted zone. We'll find artifacts elsewhere.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_6">
+    <text>The Zone gives. The Zone takes. Tonight it takes. Tomorrow we hunt again.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_7">
+    <text>Doesn't matter what it is. Bullets work on everything. Eventually.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_8">
+    <text>Zone's been weird since day one. This is just... more weird.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_9">
+    <text>I've survived Controllers, Chimeras, and the military. I'll survive this too.</text>
+</string>
+<string id="st_conv_zone_mythology_acceptance_4_10">
+    <text>Welcome to the Zone. Where the impossible is just another Tuesday.</text>
+</string>
+
+<!-- Stage 5: Final Thought (Cynical/Dark) -->
+<string id="st_conv_zone_mythology_cynical_5_1">
+    <text>You know what scares me more? We'll all forget this conversation in a week and go back.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_2">
+    <text>The Zone doesn't need to kill us. We do it for free.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_3">
+    <text>I've heard this exact conversation five times. Different stalkers. Same ending. They all went back.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_4">
+    <text>Fear fades. Greed doesn't. Artifact prices just went up for that sector.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_5">
+    <text>The Zone doesn't care if you believe in it. It'll kill you anyway.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_6">
+    <text>Fifty years from now, someone will find our bones and tell the same stories.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_7">
+    <text>Every generation thinks they'll be different. Every generation dies the same.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_8">
+    <text>We're all Monolith. Just haven't realized it yet.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_9">
+    <text>The Zone is expanding. We're dying. And we're still arguing about it.</text>
+</string>
+<string id="st_conv_zone_mythology_cynical_5_10">
+    <text>Cheers to another day in paradise, stalkers. Try not to disappear.</text>
+</string>
+
+<!-- ======================================================================
+     GRIEF & VENGEANCE - NPC Deaths (80 messages, 4 stages)
+     ====================================================================== -->
+
+<!-- Stage 0: Initial Grief (Anger/Sadness) -->
+<string id="st_conv_grief_vengeance_anger_0_1">
+    <text>$victim_name is dead. Killed by $killer in $where.</text>
+</string>
+<string id="st_conv_grief_vengeance_anger_0_2">
+    <text>Fuck. Not $victim_name. Anyone but $victim_name.</text>
+</string>
+<string id="st_conv_grief_vengeance_anger_0_3">
+    <text>We just talked yesterday. They were planning to leave. Too late now.</text>
+</string>
+<string id="st_conv_grief_vengeance_anger_0_4">
+    <text>$victim_name saved my ass twice. I wasn't there to save theirs.</text>
+</string>
+<string id="st_conv_grief_vengeance_anger_0_5">
+    <text>Another good stalker dead. Meanwhile the assholes keep breathing.</text>
+</string>
+<string id="st_conv_grief_vengeance_sadness_0_6">
+    <text>They had a kid. Outside the Zone. Who's going to tell them?</text>
+</string>
+<string id="st_conv_grief_vengeance_sadness_0_7">
+    <text>$victim_name and I came to the Zone together. Now I'm alone.</text>
+</string>
+<string id="st_conv_grief_vengeance_sadness_0_8">
+    <text>We were supposed to get out next month. Had the money and everything.</text>
+</string>
+<string id="st_conv_grief_vengeance_sadness_0_9">
+    <text>The Zone takes everyone eventually. Just... not this soon.</text>
+</string>
+<string id="st_conv_grief_vengeance_sadness_0_10">
+    <text>I told them not to go. They laughed. Said they'd be fine.</text>
+</string>
+
+<!-- Stage 1: Details/Blame -->
+<string id="st_conv_grief_vengeance_details_1_1">
+    <text>How did it happen? Was it quick?</text>
+</string>
+<string id="st_conv_grief_vengeance_details_1_2">
+    <text>Ambush. They never had a chance. $killer caught them in the open.</text>
+</string>
+<string id="st_conv_grief_vengeance_details_1_3">
+    <text>Stalker code says we help each other. Where was everyone?</text>
+</string>
+<string id="st_conv_grief_vengeance_details_1_4">
+    <text>Solo run. I told them to bring backup. They didn't listen.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_5">
+    <text>This is on whoever sent them there. They knew it was dangerous.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_6">
+    <text>If the lookouts had done their job, $victim_name would still be alive.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_7">
+    <text>The Zone didn't kill them. Greed did. One more artifact wasn't worth it.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_8">
+    <text>Bad intel. Bad luck. Bad ending.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_9">
+    <text>We've been getting sloppy. This is what happens when we forget the Zone doesn't forgive.</text>
+</string>
+<string id="st_conv_grief_vengeance_blame_1_10">
+    <text>Equipment failure. Their detector died. They walked right into it.</text>
+</string>
+
+<!-- Stage 2: Vengeance/Action Talk -->
+<string id="st_conv_grief_vengeance_revenge_2_1">
+    <text>I'm going after $killer. Who's with me?</text>
+</string>
+<string id="st_conv_grief_vengeance_revenge_2_2">
+    <text>Eye for an eye. Zone justice. Tonight.</text>
+</string>
+<string id="st_conv_grief_vengeance_revenge_2_3">
+    <text>$victim_name deserves better than us standing around talking. Let's move.</text>
+</string>
+<string id="st_conv_grief_vengeance_revenge_2_4">
+    <text>Already gearing up. $killer is mine. Anyone else wants a piece, fine.</text>
+</string>
+<string id="st_conv_grief_vengeance_revenge_2_5">
+    <text>We let this slide, it'll happen again. Someone has to draw the line.</text>
+</string>
+<string id="st_conv_grief_vengeance_caution_2_6">
+    <text>Think. $victim_name wouldn't want you dead too. Plan first, revenge second.</text>
+</string>
+<string id="st_conv_grief_vengeance_caution_2_7">
+    <text>Going in hot gets you killed. We do this smart or not at all.</text>
+</string>
+<string id="st_conv_grief_vengeance_caution_2_8">
+    <text>Count me in. But we wait for intel. Revenge without tactics is suicide.</text>
+</string>
+<string id="st_conv_grief_vengeance_caution_2_9">
+    <text>I want $killer dead too. But dying won't bring $victim_name back.</text>
+</string>
+<string id="st_conv_grief_vengeance_caution_2_10">
+    <text>We've lost one. Don't make it worse by losing more.</text>
+</string>
+
+<!-- Stage 3: Resolution (Acceptance/Moving On) -->
+<string id="st_conv_grief_vengeance_acceptance_3_1">
+    <text>Zone's a graveyard. We're just picking our plots.</text>
+</string>
+<string id="st_conv_grief_vengeance_acceptance_3_2">
+    <text>Drink to the dead. Fight for the living. That's all we can do.</text>
+</string>
+<string id="st_conv_grief_vengeance_acceptance_3_3">
+    <text>$victim_name knew the risks. We all do. Doesn't make it easier.</text>
+</string>
+<string id="st_conv_grief_vengeance_acceptance_3_4">
+    <text>Tomorrow someone will toast to us the same way. Circle of life in the Zone.</text>
+</string>
+<string id="st_conv_grief_vengeance_acceptance_3_5">
+    <text>Bury the gear. Burn the body. Forget the name. Stalker tradition.</text>
+</string>
+<string id="st_conv_grief_vengeance_memorial_3_6">
+    <text>Leaving their patch on the memorial wall. Next to three hundred others.</text>
+</string>
+<string id="st_conv_grief_vengeance_memorial_3_7">
+    <text>They wanted to die in the Zone. Guess they got their wish.</text>
+</string>
+<string id="st_conv_grief_vengeance_memorial_3_8">
+    <text>At least it was fast. Better than bleeding out in an anomaly.</text>
+</string>
+<string id="st_conv_grief_vengeance_memorial_3_9">
+    <text>Checked their stash. Left a bottle and some ammo. What they would've wanted.</text>
+</string>
+<string id="st_conv_grief_vengeance_memorial_3_10">
+    <text>To $victim_name. They died doing what they loved. We should all be so lucky.</text>
+</string>
+
+<!-- ======================================================================
+     ADDITIONAL COMBAT VARIANTS - More Mutant Types (30 messages)
+     ====================================================================== -->
+
+<!-- Pseudogiant Kills -->
+<string id="st_conv_combat_legendary_kill_pride_0_11">
+    <text>Dropped a Pseudogiant near $where. Took all my ammo.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_skeptic_1_11">
+    <text>Pseudogiant? With your gear? Doubt it.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_witness_3_2">
+    <text>Heard the roar from two klicks away. He's not lying.</text>
+</string>
+
+<!-- Burer Encounters -->
+<string id="st_conv_combat_legendary_kill_pride_0_12">
+    <text>Killed a Burer before it could disarm me. Almost.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_relief_4_2">
+    <text>Burer kills are luck, not skill. Glad you made it.</text>
+</string>
+
+<!-- Snork Pack -->
+<string id="st_conv_combat_survival_pride_0_11">
+    <text>Survived snork pack in the tunnels. Twelve of them.</text>
+</string>
+<string id="st_conv_combat_survival_fear_1_11">
+    <text>Tunnels? At night? You're insane.</text>
+</string>
+
+<!-- Poltergeist -->
+<string id="st_conv_zone_mythology_fear_0_11">
+    <text>Poltergeist threw my own grenades back at me. The Zone is laughing.</text>
+</string>
+
+<!-- PvP Encounters -->
+<string id="st_conv_combat_legendary_kill_pride_0_13">
+    <text>Bandit squad tried to rob me. Tried.</text>
+</string>
+<string id="st_conv_combat_legendary_kill_cynical_1_12">
+    <text>Bandits aren't legendary. They're just stupid.</text>
+</string>
+
+<!-- ======================================================================
+     ROOKIE ROASTING EXPANSION (20 messages)
+     ====================================================================== -->
+
+<string id="st_conv_rookie_roasting_sarcastic_0_11">
+    <text>Why do artifacts glow?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_11">
+    <text>So rookies can find them in the dark before anomalies find the rookies.</text>
+</string>
+
+<string id="st_conv_rookie_roasting_sarcastic_0_12">
+    <text>How do I know if meat is irradiated?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_12">
+    <text>Eat it. If you die, it was irradiated.</text>
+</string>
+
+<string id="st_conv_rookie_roasting_sarcastic_0_13">
+    <text>Can I pet the blind dogs?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_13">
+    <text>Sure. They love fingers.</text>
+</string>
+
+<string id="st_conv_rookie_roasting_sarcastic_0_14">
+    <text>Why doesn't anyone use maps?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_14">
+    <text>Because the Zone rearranges itself to spite cartographers.</text>
+</string>
+
+<string id="st_conv_rookie_roasting_sarcastic_0_15">
+    <text>Is Pripyat safe during the day?</text>
+</string>
+<string id="st_conv_rookie_roasting_sarcastic_1_15">
+    <text>Absolutely. Monolith only shoots at night. *eyeroll*</text>
+</string>
+
+<!-- ======================================================================
+     ECONOMIC GOSSIP EXPANSION (20 messages)
+     ====================================================================== -->
+
+<string id="st_conv_economic_gossip_greed_0_11">
+    <text>Sidorovich is buying Moonlight artifacts for 80k. Someone tipped him off.</text>
+</string>
+<string id="st_conv_economic_gossip_skeptic_1_11">
+    <text>Sidorovich never pays that much without a reason. What's he know?</text>
+</string>
+
+<string id="st_conv_economic_gossip_anger_0_12">
+    <text>Trader scammed me. Sold me a "Goldfish". It's painted glass.</text>
+</string>
+<string id="st_conv_economic_gossip_cynical_1_12">
+    <text>First time? Everyone gets scammed once. Now you know.</text>
+</string>
+
+<string id="st_conv_economic_gossip_excitement_0_13">
+    <text>Ecologists paying triple for mutant parts. Research grant came through.</text>
+</string>
+<string id="st_conv_economic_gossip_greed_1_13">
+    <text>Triple? Time to go hunting.</text>
+</string>
+
+<string id="st_conv_economic_gossip_cynical_0_14">
+    <text>Barkeep raised vodka prices again. Third time this month.</text>
+</string>
+<string id="st_conv_economic_gossip_anger_1_14">
+    <text>Zone's trying to kill us. Now Barkeep joins in.</text>
+</string>
+
+<!-- ======================================================================
+     FACTION DEBATE EXPANSION (20 messages)
+     ====================================================================== -->
+
+<string id="st_conv_faction_debate_conviction_0_6">
+    <text>Freedom's "free Zone" ideology will doom humanity. We need barriers.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_1_6">
+    <text>Your barriers didn't stop the first emission. Won't stop the next.</text>
+</string>
+
+<string id="st_conv_faction_debate_conviction_0_7">
+    <text>Monolith proves what happens when the Zone is left unchecked.</text>
+</string>
+<string id="st_conv_faction_debate_rebellion_1_7">
+    <text>Monolith proves what happens when governments experiment on people.</text>
+</string>
+
+<string id="st_conv_faction_debate_cynical_2_6">
+    <text>You're both wrong. Zone doesn't care about your politics. It kills everyone.</text>
+</string>
+
+<string id="st_conv_faction_debate_weary_3_6">
+    <text>Every year, same argument. Every year, we all keep dying.</text>
+</string>
+
+<!-- ======================================================================
+     DRUNK PHILOSOPHY EXPANSION (10 messages)
+     ====================================================================== -->
+
+<string id="st_conv_drunk_philosophy_drunk_0_11">
+    <text>If artifacts are crystallized time... are we touching the past?</text>
+</string>
+<string id="st_conv_drunk_philosophy_skeptic_1_11">
+    <text>You're touching vodka. Put the bottle down.</text>
+</string>
+
+<string id="st_conv_drunk_philosophy_absurd_2_11">
+    <text>No no, he's right. We're all time travelers. Moving forward one second per second.</text>
+</string>
+
+<!-- ======================================================================
+     SURVIVAL STORY EXPANSION (10 messages)
+     ====================================================================== -->
+
+<string id="st_conv_survival_story_relief_0_11">
+    <text>Ran through the Red Forest during an emission. Made it to shelter with 10 seconds left.</text>
+</string>
+<string id="st_conv_survival_story_fear_1_11">
+    <text>Ten seconds? That's not luck. That's borrowed time.</text>
+</string>
+
+<string id="st_conv_survival_story_witness_2_11">
+    <text>I saw the timer on your PDA. Thought you were dead.</text>
+</string>
+
+<!-- End of barebones additional messages -->
+
+</string_table>

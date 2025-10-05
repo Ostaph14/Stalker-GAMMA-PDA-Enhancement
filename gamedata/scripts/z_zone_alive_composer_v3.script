@@ -1,0 +1,554 @@
+-- ========================================================================
+-- Zone Alive V3 - Layered Message Composer
+-- ========================================================================
+-- Purpose: Generate dynamic, coherent messages using complete sentence templates
+--          with emotion/relationship transformations
+-- Author: Kalish + Claude Code
+-- Version: 3.0.0
+-- ========================================================================
+
+local game_data = z_zone_alive_data
+local npc_state = z_zone_alive_npc_state
+
+-- ========================================================================
+-- EMOTION TRANSFORMATION TABLES
+-- ========================================================================
+
+local EMOTION_VERB_REPLACEMENTS = {
+    angry = {
+        ["raised"] = "jacked up",
+        ["increased"] = "hiked",
+        ["wants"] = "demands",
+        ["charges"] = "gouges us for",
+        ["selling"] = "ripping us off with",
+        ["asking"] = "demanding"
+    },
+    jovial = {
+        ["raised"] = "bumped",
+        ["increased"] = "bumped up",
+        ["wants"] = "asking for",
+        ["died"] = "bit the dust",
+        ["killed"] = "took down",
+        ["survived"] = "made it through"
+    },
+    fearful = {
+        ["spotted"] = "saw",
+        ["saw"] = "spotted",
+        ["heard"] = "got word about",
+        ["approaching"] = "heading this way",
+        ["near"] = "dangerously close to"
+    },
+    proud = {
+        ["killed"] = "took down",
+        ["survived"] = "made it through",
+        ["escaped"] = "got away from"
+    }
+}
+
+local EMOTION_WRAPPERS = {
+    angry = {
+        interjections = {
+            "Fucking hell! ",
+            "This is bullshit! ",
+            "Goddamn it! ",
+            "You've gotta be kidding me! ",
+            "Are you serious? "
+        },
+        closers = {
+            " What a ripoff.",
+            " This is complete bullshit.",
+            " Someone's gonna pay for this.",
+            " I'm done with this crap.",
+            " Unbelievable."
+        },
+        probability = 40  -- 40% chance to add wrapper
+    },
+    jovial = {
+        interjections = {
+            "Hah! ",
+            "Check this out: ",
+            "You're gonna love this - ",
+            "*laughs* ",
+            "Listen to this: "
+        },
+        closers = {
+            " Good times.",
+            " Zone's wild, huh?",
+            " Cheers to that, brother.",
+            " Typical Zone shit.",
+            " Can't make this up."
+        },
+        probability = 50
+    },
+    fearful = {
+        interjections = {
+            "Be careful - ",
+            "Warning: ",
+            "This is bad: ",
+            "Listen up: ",
+            "Heads up - "
+        },
+        closers = {
+            " Watch your back.",
+            " Don't say I didn't warn you.",
+            " This place is getting worse.",
+            " Get out while you can.",
+            " Stay alert."
+        },
+        probability = 60
+    },
+    proud = {
+        interjections = {
+            "Just saying, ",
+            "Not to brag, but ",
+            "Yeah, so ",
+            "Listen: "
+        },
+        closers = {
+            " Still got it.",
+            " Not bad for a day's work.",
+            " Just another day in the Zone.",
+            " Piece of cake."
+        },
+        probability = 35
+    },
+    grief = {
+        interjections = {
+            "Damn it... ",
+            "Can't believe... "
+        },
+        closers = {
+            " Rest in peace.",
+            " We'll miss them.",
+            " Gone too soon."
+        },
+        probability = 70
+    }
+}
+
+-- ========================================================================
+-- RELATIONSHIP DESCRIPTORS
+-- ========================================================================
+
+local RELATIONSHIP_DESCRIPTORS = {
+    trader = {
+        hostile = {"that bastard", "that scumbag", "that greedy fuck", "that asshole"},
+        friendly = {"good old", "our friend", "our buddy", "reliable"}
+    },
+    npc = {
+        hostile = {"that bastard", "that asshole", "that piece of shit"},
+        friendly = {"my friend", "my buddy", "good old", "brother"}
+    },
+    faction = {
+        hostile = {"those %s assholes", "%s scum", "those %s bastards", "%s trash"},
+        friendly = {"our %s brothers", "the %s guys", "%s friends", "our %s allies"}
+    }
+}
+
+-- ========================================================================
+-- HELPER FUNCTIONS
+-- ========================================================================
+
+local function apply_emotion_verb_replacements(text, emotion)
+    if not emotion or emotion == "neutral" or not EMOTION_VERB_REPLACEMENTS[emotion] then
+        return text
+    end
+
+    local replacements = EMOTION_VERB_REPLACEMENTS[emotion]
+    local result = text
+
+    for original, replacement in pairs(replacements) do
+        -- Only replace whole words (not partial matches)
+        result = result:gsub("%f[%a]" .. original .. "%f[%A]", replacement)
+    end
+
+    return result
+end
+
+local function add_emotion_wrapper(text, emotion)
+    if not emotion or emotion == "neutral" or not EMOTION_WRAPPERS[emotion] then
+        return text
+    end
+
+    local wrapper = EMOTION_WRAPPERS[emotion]
+    local result = text
+
+    -- Add interjection (probabilistic)
+    if math.random(100) <= wrapper.probability and wrapper.interjections then
+        local interjection = wrapper.interjections[math.random(#wrapper.interjections)]
+        result = interjection .. result
+    end
+
+    -- Add closer (probabilistic)
+    if math.random(100) <= (wrapper.probability + 10) and wrapper.closers then
+        local closer = wrapper.closers[math.random(#wrapper.closers)]
+        result = result .. closer
+    end
+
+    return result
+end
+
+local function apply_relationship_descriptor(text, npc_name, relationship, descriptor_type)
+    if not npc_name or relationship == 0 then
+        return text
+    end
+
+    descriptor_type = descriptor_type or "npc"
+    local descriptors = RELATIONSHIP_DESCRIPTORS[descriptor_type]
+    if not descriptors then
+        return text
+    end
+
+    -- Check if already has a descriptor to avoid "that bastard that bastard X"
+    local existing_descriptors = {"that", "this", "our", "their", "good", "old", "bastard", "scumbag", "friend", "buddy"}
+    for _, desc in ipairs(existing_descriptors) do
+        if text:match(desc .. " " .. npc_name) then
+            return text  -- Already has descriptor
+        end
+    end
+
+    -- Select descriptor based on relationship
+    local descriptor_list
+    if relationship <= -50 then
+        descriptor_list = descriptors.hostile
+    elseif relationship >= 50 then
+        descriptor_list = descriptors.friendly
+    else
+        return text  -- Neutral, no descriptor
+    end
+
+    if descriptor_list and #descriptor_list > 0 then
+        local descriptor = descriptor_list[math.random(#descriptor_list)]
+        -- Replace first occurrence of NPC name with descriptor + name
+        text = text:gsub(npc_name, descriptor .. " " .. npc_name, 1)
+    end
+
+    return text
+end
+
+-- ========================================================================
+-- TOPIC COMPOSERS
+-- ========================================================================
+
+function compose_price_complaint(context, emotion, relationship)
+    -- Validate required context
+    if not context.trader or not context.item or not context.current_price then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for price_complaint")
+        return nil
+    end
+
+    -- Select random template (10 variants)
+    local template_num = math.random(1, 10)
+    local template_id = "st_zal_price_" .. template_num
+    local template = game.translate_string(template_id)
+
+    -- Check if translation exists
+    if template == template_id then
+        printf("! [ZONE ALIVE V3] WARNING: Template not found: %s", template_id)
+        -- Fallback template
+        template = "%s raised %s prices to %d rubles."
+    end
+
+    -- Build base message with string.format
+    local base_message = string.format(template,
+        context.trader,
+        context.item,
+        context.previous_price or context.current_price - 300,
+        context.current_price
+    )
+
+    -- Apply transformations
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = apply_relationship_descriptor(base_message, context.trader, relationship, "trader")
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_mutant_sighting(context, emotion, relationship)
+    if not context.mutant_type or not context.location then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for mutant_sighting")
+        return nil
+    end
+
+    local template_num = math.random(1, 10)
+    local template_id = "st_zal_mutant_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "Spotted a %s near %s. %s threat level."
+    end
+
+    local threat_level = context.threat_level or "unknown"
+    local base_message = string.format(template,
+        context.mutant_type,
+        context.location,
+        threat_level
+    )
+
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_survival_story(context, emotion, relationship)
+    if not context.danger_type or not context.location then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for survival_story")
+        return nil
+    end
+
+    local template_num = math.random(1, 10)
+    local template_id = "st_zal_survival_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "Just survived %s near %s. That was close."
+    end
+
+    local base_message = string.format(template,
+        context.danger_type,
+        context.location
+    )
+
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_faction_comment(context, emotion, relationship)
+    if not context.enemy_faction then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for faction_comment")
+        return nil
+    end
+
+    local template_num = math.random(1, 8)
+    local template_id = "st_zal_faction_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "%s are causing trouble again."
+    end
+
+    local base_message = string.format(template,
+        context.enemy_faction
+    )
+
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_weather_comment(context, emotion, relationship)
+    if not context.weather then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for weather_comment")
+        return nil
+    end
+
+    local template_num = math.random(1, 6)
+    local template_id = "st_zal_weather_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "Weather's %s today."
+    end
+
+    local base_message = string.format(template,
+        context.weather,
+        context.time_of_day or "day"
+    )
+
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_combat_kill(context, emotion, relationship)
+    if not context.who or not context.what then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for combat_kill")
+        return nil
+    end
+
+    local template_num = math.random(1, 10)
+    local template_id = "st_zal_combat_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "%s just took down a %s near %s!"
+    end
+
+    local base_message = string.format(template,
+        context.who,
+        context.what,
+        context.where or "the Zone"
+    )
+
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = apply_relationship_descriptor(base_message, context.who, relationship, "npc")
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+function compose_grief(context, emotion, relationship)
+    if not context.victim_name then
+        printf("! [ZONE ALIVE V3] CRITICAL: Missing required context for grief")
+        return nil
+    end
+
+    local template_num = math.random(1, 8)
+    local template_id = "st_zal_grief_" .. template_num
+    local template = game.translate_string(template_id)
+
+    if template == template_id then
+        template = "%s is gone. Damn it."
+    end
+
+    local base_message = string.format(template,
+        context.victim_name,
+        context.killer_name or "something",
+        context.location or "the Zone"
+    )
+
+    base_message = apply_emotion_verb_replacements(base_message, emotion)
+    base_message = add_emotion_wrapper(base_message, emotion)
+
+    return base_message
+end
+
+-- ========================================================================
+-- TOPIC ROUTER
+-- ========================================================================
+
+local TOPIC_COMPOSERS = {
+    price_complaint = compose_price_complaint,
+    mutant_sighting = compose_mutant_sighting,
+    survival_story = compose_survival_story,
+    faction_comment = compose_faction_comment,
+    weather_comment = compose_weather_comment,
+    combat_kill = compose_combat_kill,
+    grief = compose_grief
+}
+
+-- ========================================================================
+-- MAIN COMPOSITION FUNCTION
+-- ========================================================================
+
+function compose_dynamic_message(speaker_id, target_id, override_topic, event_context)
+    -- Get speaker emotion
+    local emotion = "neutral"
+    local emotion_intensity = 0
+    if npc_state and npc_state.get_npc_current_emotion then
+        emotion, emotion_intensity = npc_state.get_npc_current_emotion(speaker_id)
+    end
+
+    -- Get relationship to target
+    local relationship = 0
+    if target_id and npc_state and npc_state.get_relationship then
+        relationship = npc_state.get_relationship(speaker_id, target_id)
+    end
+
+    -- Use override topic if provided, otherwise select randomly
+    local selected_topic = override_topic
+
+    if not selected_topic then
+        -- Select topic based on weights
+        local topics = {
+            {name = "price_complaint", weight = 15},
+            {name = "mutant_sighting", weight = 25},
+            {name = "survival_story", weight = 20},
+            {name = "faction_comment", weight = 15},
+            {name = "weather_comment", weight = 10}
+        }
+
+        -- Weighted random selection
+        local total_weight = 0
+        for _, t in ipairs(topics) do
+            total_weight = total_weight + t.weight
+        end
+
+        local roll = math.random() * total_weight
+        local cumulative = 0
+        selected_topic = "price_complaint"
+
+        for _, t in ipairs(topics) do
+            cumulative = cumulative + t.weight
+            if roll <= cumulative then
+                selected_topic = t.name
+                break
+            end
+        end
+    else
+        printf("! [ZONE ALIVE V3] Using override topic: %s", selected_topic)
+    end
+
+    -- Build context for selected topic
+    local context = event_context  -- Use event context if provided
+
+    -- If no event context, build random context for selected topic
+    if not context then
+        if selected_topic == "price_complaint" and game_data and game_data.build_price_gossip_context then
+            context = game_data.build_price_gossip_context()
+        elseif selected_topic == "mutant_sighting" and game_data and game_data.build_location_chatter_context then
+            context = game_data.build_location_chatter_context()
+        elseif selected_topic == "survival_story" and game_data and game_data.build_survival_story_context then
+            context = game_data.build_survival_story_context()
+        elseif selected_topic == "faction_comment" and game_data and game_data.build_faction_tension_context then
+            local se_speaker = alife_object(speaker_id)
+            local speaker_faction = "stalker"
+            if se_speaker and se_speaker.community then
+                local success, result = pcall(function() return se_speaker:community() end)
+                if success and result then
+                    speaker_faction = result
+                end
+            end
+            context = game_data.build_faction_tension_context(speaker_faction)
+        elseif selected_topic == "weather_comment" and game_data and game_data.build_weather_comment_context then
+            context = game_data.build_weather_comment_context()
+        end
+    else
+        printf("! [ZONE ALIVE V3] Using event context: %s", table.concat(context, ", ") or "unknown")
+    end
+
+    -- Validate context
+    if not context then
+        printf("! [ZONE ALIVE V3] CRITICAL: Failed to build context for topic: %s", selected_topic)
+        return nil
+    end
+
+    -- Get composer for topic
+    local composer = TOPIC_COMPOSERS[selected_topic]
+    if not composer then
+        printf("! [ZONE ALIVE V3] ERROR: No composer for topic: %s", selected_topic)
+        return nil
+    end
+
+    -- Compose message
+    local message = composer(context, emotion, relationship)
+
+    if message then
+        printf("! [ZONE ALIVE V3] SUCCESS: Topic=%s | Emotion=%s | Msg=%s",
+               selected_topic, emotion, message)
+    else
+        printf("! [ZONE ALIVE V3] FAILED: Composer returned nil for topic: %s", selected_topic)
+    end
+
+    return message
+end
+
+-- ========================================================================
+-- EXPORTS
+-- ========================================================================
+
+return {
+    compose_dynamic_message = compose_dynamic_message,
+    compose_price_complaint = compose_price_complaint,
+    compose_mutant_sighting = compose_mutant_sighting,
+    compose_survival_story = compose_survival_story,
+    compose_faction_comment = compose_faction_comment,
+    compose_weather_comment = compose_weather_comment,
+    compose_combat_kill = compose_combat_kill,
+    compose_grief = compose_grief
+}

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+    <!-- ========================================================================
+         Zone Alive - MCM Interface Strings
+         ======================================================================== -->
+
+    <!-- Main Title -->
+    <string id="ui_mcm_zone_alive_title">
+        <text>A.L.I.V.E - Dynamic Conversations</text>
+    </string>
+
+    <!-- Menu Name -->
+    <string id="ui_mcm_menu_zone_alive">
+        <text>A.L.I.V.E</text>
+    </string>
+
+    <!-- Master Enable/Disable -->
+    <string id="ui_mcm_zone_alive_enable">
+        <text>Enable Zone Alive System</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_desc">
+        <text>Master toggle for dynamic NPC conversations. When enabled, NPCs will have multi-stage conversations about Zone events.</text>
+    </string>
+
+    <!-- Conversation Frequency -->
+    <string id="ui_mcm_zone_alive_frequency">
+        <text>Conversation Frequency</text>
+    </string>
+    <string id="ui_mcm_zone_alive_frequency_desc">
+        <text>How often Zone Alive conversations occur:\n\nVery Rare: ~1 per hour (special moments only)\nRare: ~1 per 30 min (occasional atmosphere)\nBalanced: ~1 per 15 min (default, recommended)\nCommon: ~1 per 10 min (active zone chatter)\nVery Common: ~1 per 6 min (constant conversation)\n\nHigher = more frequent conversations</text>
+    </string>
+
+    <!-- Frequency Dropdown Options -->
+    <string id="st_alive_very_rare">
+        <text>Very Rare</text>
+    </string>
+    <string id="st_alive_rare">
+        <text>Rare</text>
+    </string>
+    <string id="st_alive_balanced">
+        <text>Balanced</text>
+    </string>
+    <string id="st_alive_common">
+        <text>Common</text>
+    </string>
+    <string id="st_alive_very_common">
+        <text>Very Common</text>
+    </string>
+
+    <!-- Max Conversation Depth -->
+    <string id="ui_mcm_zone_alive_max_stages">
+        <text>Conversation Depth</text>
+    </string>
+    <string id="ui_mcm_zone_alive_max_stages_desc">
+        <text>Maximum conversation length:\n\nBrief: 1-3 messages (quick exchanges)\nBalanced: 3-5 messages (default, recommended)\nEpic: 5-7 messages (full debates)\n\nLonger conversations are more immersive but can clutter PDA.</text>
+    </string>
+
+    <!-- Depth Dropdown Options -->
+    <string id="st_alive_brief">
+        <text>Brief</text>
+    </string>
+    <string id="st_alive_epic">
+        <text>Epic</text>
+    </string>
+
+    <!-- Topics Section Divider -->
+    <string id="ui_mcm_zone_alive_topics_title">
+        <text>Conversation Topics</text>
+    </string>
+
+    <!-- Combat Stories -->
+    <string id="ui_mcm_zone_alive_enable_combat">
+        <text>Enable Combat Stories</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_combat_desc">
+        <text>Legendary kills, survival stories, battlefield banter. NPCs discuss major fights and close calls.</text>
+    </string>
+
+    <!-- Faction Debates -->
+    <string id="ui_mcm_zone_alive_enable_debates">
+        <text>Enable Faction Debates</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_debates_desc">
+        <text>Duty vs Freedom, containment vs evolution. Stalkers argue about ideology and the Zone's purpose.</text>
+    </string>
+
+    <!-- Humor & Philosophy -->
+    <string id="ui_mcm_zone_alive_enable_humor">
+        <text>Enable Humor & Philosophy</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_humor_desc">
+        <text>Rookie roasting, drunk philosophy, gallows humor. Lighthearted moments in a dark world.</text>
+    </string>
+
+    <!-- Zone Mythology -->
+    <string id="ui_mcm_zone_alive_enable_mythology">
+        <text>Enable Zone Mythology</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_mythology_desc">
+        <text>Ghost stories, cryptids, unexplained phenomena. Stalkers share creepy tales and legends.</text>
+    </string>
+
+    <!-- Rumors & Gossip -->
+    <string id="ui_mcm_zone_alive_enable_rumors">
+        <text>Enable Rumors & Gossip</text>
+    </string>
+    <string id="ui_mcm_zone_alive_enable_rumors_desc">
+        <text>Economic gossip, artifact finds, trader drama. The Zone's rumor mill at work.</text>
+    </string>
+
+    <!-- Advanced Section Divider -->
+    <string id="ui_mcm_zone_alive_advanced_title">
+        <text>Advanced Settings</text>
+    </string>
+
+    <!-- Debug Mode -->
+    <string id="ui_mcm_zone_alive_debug">
+        <text>Enable Debug Mode</text>
+    </string>
+    <string id="ui_mcm_zone_alive_debug_desc">
+        <text>Show debug messages in console. Only enable for troubleshooting - will spam your log.</text>
+    </string>
+
+</string_table>

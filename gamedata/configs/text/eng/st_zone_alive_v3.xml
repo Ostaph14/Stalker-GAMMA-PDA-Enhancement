@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+
+<!-- =====================================================================
+     ZONE ALIVE V3 - Complete Sentence Templates
+     Version: 3.0.0
+
+     Uses string.format() style variables: %s (string), %d (number)
+     Each template is a complete, grammatically correct sentence
+     Variables are topic-specific and position-dependent
+
+     Format: st_zal_[topic]_[variant_number]
+     ===================================================================== -->
+
+<!-- =====================================================================
+     PRICE_COMPLAINT TOPIC
+     Variables: %s=trader, %s=item, %d=old_price, %d=new_price
+     ===================================================================== -->
+
+<string id="st_zal_price_1">
+    <text>%s raised %s prices from %d to %d rubles.</text>
+</string>
+
+<string id="st_zal_price_2">
+    <text>%s wants %d for %s now. Used to be %d.</text>
+</string>
+
+<string id="st_zal_price_3">
+    <text>%s is charging %d rubles for %s. Was %d yesterday.</text>
+</string>
+
+<string id="st_zal_price_4">
+    <text>%s hiked %s prices to %d. Paid %d last week.</text>
+</string>
+
+<string id="st_zal_price_5">
+    <text>%s bumped %s prices from %d to %d rubles.</text>
+</string>
+
+<string id="st_zal_price_6">
+    <text>%s asking %d for %s now. Price went up from %d.</text>
+</string>
+
+<string id="st_zal_price_7">
+    <text>%s raised %s to %d rubles. Used to pay %d.</text>
+</string>
+
+<string id="st_zal_price_8">
+    <text>Can you believe %s wants %d for %s? Was %d before.</text>
+</string>
+
+<string id="st_zal_price_9">
+    <text>%s jacked up %s prices to %d. Previously %d.</text>
+</string>
+
+<string id="st_zal_price_10">
+    <text>%s increased %s prices from %d to %d rubles.</text>
+</string>
+
+<!-- =====================================================================
+     MUTANT_SIGHTING TOPIC
+     Variables: %s=mutant_type, %s=location, %s=threat_level
+     ===================================================================== -->
+
+<string id="st_zal_mutant_1">
+    <text>Spotted a %s near %s. %s threat level.</text>
+</string>
+
+<string id="st_zal_mutant_2">
+    <text>%s sighting at %s. Threat level: %s.</text>
+</string>
+
+<string id="st_zal_mutant_3">
+    <text>Saw a %s around %s. Marked as %s threat.</text>
+</string>
+
+<string id="st_zal_mutant_4">
+    <text>%s spotted near %s. Be careful, %s threat.</text>
+</string>
+
+<string id="st_zal_mutant_5">
+    <text>Watch out - %s near %s. %s danger level.</text>
+</string>
+
+<string id="st_zal_mutant_6">
+    <text>Heads up: %s sighting at %s. Threat assessment: %s.</text>
+</string>
+
+<string id="st_zal_mutant_7">
+    <text>Just saw a %s at %s. %s threat according to intel.</text>
+</string>
+
+<string id="st_zal_mutant_8">
+    <text>%s confirmed near %s. Classified as %s threat.</text>
+</string>
+
+<string id="st_zal_mutant_9">
+    <text>Ran into a %s at %s. Threat level is %s.</text>
+</string>
+
+<string id="st_zal_mutant_10">
+    <text>%s in the %s area. Marked %s threat.</text>
+</string>
+
+<!-- =====================================================================
+     SURVIVAL_STORY TOPIC
+     Variables: %s=danger_type, %s=location
+     ===================================================================== -->
+
+<string id="st_zal_survival_1">
+    <text>Just survived %s near %s. That was close.</text>
+</string>
+
+<string id="st_zal_survival_2">
+    <text>Barely made it through %s at %s.</text>
+</string>
+
+<string id="st_zal_survival_3">
+    <text>Escaped from %s near %s. Still alive somehow.</text>
+</string>
+
+<string id="st_zal_survival_4">
+    <text>%s almost got me at %s. Lucky to be standing.</text>
+</string>
+
+<string id="st_zal_survival_5">
+    <text>Survived %s near %s. Used all my medkits.</text>
+</string>
+
+<string id="st_zal_survival_6">
+    <text>Got cornered by %s at %s. Made it out by the skin of my teeth.</text>
+</string>
+
+<string id="st_zal_survival_7">
+    <text>Close call with %s near %s. Thought I was dead.</text>
+</string>
+
+<string id="st_zal_survival_8">
+    <text>Ran into %s at %s. Barely escaped with my life.</text>
+</string>
+
+<string id="st_zal_survival_9">
+    <text>%s ambushed me near %s. Somehow still breathing.</text>
+</string>
+
+<string id="st_zal_survival_10">
+    <text>Just fought off %s at %s. That was too close.</text>
+</string>
+
+<!-- =====================================================================
+     FACTION_COMMENT TOPIC
+     Variables: %s=enemy_faction
+     ===================================================================== -->
+
+<string id="st_zal_faction_1">
+    <text>%s are causing trouble again.</text>
+</string>
+
+<string id="st_zal_faction_2">
+    <text>%s attacked a patrol earlier today.</text>
+</string>
+
+<string id="st_zal_faction_3">
+    <text>Watch out for %s. They're active in the area.</text>
+</string>
+
+<string id="st_zal_faction_4">
+    <text>%s are getting bolder. Saw them pushing into new territory.</text>
+</string>
+
+<string id="st_zal_faction_5">
+    <text>Had a run-in with %s. They're not backing down.</text>
+</string>
+
+<string id="st_zal_faction_6">
+    <text>%s are stirring up shit as usual.</text>
+</string>
+
+<string id="st_zal_faction_7">
+    <text>Heard %s are planning something big.</text>
+</string>
+
+<string id="st_zal_faction_8">
+    <text>%s ambushed some of our guys. This isn't over.</text>
+</string>
+
+<!-- =====================================================================
+     WEATHER_COMMENT TOPIC
+     Variables: %s=weather, %s=time_of_day
+     ===================================================================== -->
+
+<string id="st_zal_weather_1">
+    <text>Weather's %s this %s.</text>
+</string>
+
+<string id="st_zal_weather_2">
+    <text>This %s weather makes everything harder.</text>
+</string>
+
+<string id="st_zal_weather_3">
+    <text>It's %s out there. Watch your step.</text>
+</string>
+
+<string id="st_zal_weather_4">
+    <text>This %s weather is Zone-typical.</text>
+</string>
+
+<string id="st_zal_weather_5">
+    <text>Visibility's bad with this %s weather.</text>
+</string>
+
+<string id="st_zal_weather_6">
+    <text>%s conditions today. Stay alert.</text>
+</string>
+
+<string id="st_zal_weather_7">
+    <text>Looks like %s weather. Typical Zone.</text>
+</string>
+
+<string id="st_zal_weather_8">
+    <text>It's %s today. Makes everything harder.</text>
+</string>
+
+<!-- =====================================================================
+     COMBAT_KILL TOPIC
+     Variables: %s=who, %s=what (mutant), %s=where (location)
+     ===================================================================== -->
+
+<string id="st_zal_combat_1">
+    <text>%s just took down a %s near %s!</text>
+</string>
+
+<string id="st_zal_combat_2">
+    <text>Did you hear? %s killed a %s at %s.</text>
+</string>
+
+<string id="st_zal_combat_3">
+    <text>%s managed to take out a %s near %s.</text>
+</string>
+
+<string id="st_zal_combat_4">
+    <text>A %s got dropped by %s near %s. Impressive.</text>
+</string>
+
+<string id="st_zal_combat_5">
+    <text>%s bagged a %s at %s. Not bad.</text>
+</string>
+
+<string id="st_zal_combat_6">
+    <text>Heard %s killed a %s near %s. Hell of a fight.</text>
+</string>
+
+<string id="st_zal_combat_7">
+    <text>%s took down a %s at %s. That takes guts.</text>
+</string>
+
+<string id="st_zal_combat_8">
+    <text>%s dropped a %s near %s. Solid work.</text>
+</string>
+
+<string id="st_zal_combat_9">
+    <text>Word is %s killed a %s at %s. Badass.</text>
+</string>
+
+<string id="st_zal_combat_10">
+    <text>%s wasted a %s near %s. Zone's a bit safer.</text>
+</string>
+
+<!-- =====================================================================
+     GRIEF TOPIC
+     Variables: %s=victim_name, %s=killer_name, %s=location
+     ===================================================================== -->
+
+<string id="st_zal_grief_1">
+    <text>%s is gone. Damn it.</text>
+</string>
+
+<string id="st_zal_grief_2">
+    <text>Lost %s today. %s got them near %s.</text>
+</string>
+
+<string id="st_zal_grief_3">
+    <text>%s didn't make it. Killed by %s at %s.</text>
+</string>
+
+<string id="st_zal_grief_4">
+    <text>%s is dead. This Zone takes everyone eventually.</text>
+</string>
+
+<string id="st_zal_grief_5">
+    <text>Can't believe %s is gone. Rest in peace, brother.</text>
+</string>
+
+<string id="st_zal_grief_6">
+    <text>%s fell near %s. %s got them.</text>
+</string>
+
+<string id="st_zal_grief_7">
+    <text>Another one gone. %s died at %s.</text>
+</string>
+
+<string id="st_zal_grief_8">
+    <text>%s won't be coming back. Gone too soon.</text>
+</string>
+
+</string_table>

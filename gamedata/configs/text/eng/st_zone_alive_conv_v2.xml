@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<string_table>
+
+<!-- =====================================================================
+     ZONE ALIVE V2 - Dynamic Message Fragments
+     Version: 2.0.0
+
+     These are FRAGMENTS, not complete sentences.
+     The composer will combine them dynamically based on:
+     - NPC emotion (angry, proud, fearful, jovial, etc.)
+     - Relationship to listener (friendly, hostile, neutral)
+     - Game context (prices, locations, weather, etc.)
+
+     Format: st_frag_[type]_[modifier]_[variant]
+     Types: opening, subject, action, object, detail, closer
+     ===================================================================== -->
+
+<!-- =====================================================================
+     OPENING FRAGMENTS (Emotion-based)
+     How the message starts - sets the tone
+     ===================================================================== -->
+
+<!-- Angry openings -->
+<string id="st_frag_opening_angry_1"><text>Fucking hell,</text></string>
+<string id="st_frag_opening_angry_2"><text>You know what pisses me off?</text></string>
+<string id="st_frag_opening_angry_3"><text>This is bullshit -</text></string>
+<string id="st_frag_opening_angry_4"><text>I'm sick of this:</text></string>
+<string id="st_frag_opening_angry_5"><text>Goddamn it,</text></string>
+<string id="st_frag_opening_angry_6"><text>Listen to this crap:</text></string>
+<string id="st_frag_opening_angry_7"><text>Are you kidding me?</text></string>
+<string id="st_frag_opening_angry_8"><text>Un-fucking-believable.</text></string>
+
+<!-- Neutral openings -->
+<string id="st_frag_opening_neutral_1"><text>Hey,</text></string>
+<string id="st_frag_opening_neutral_2"><text>You know,</text></string>
+<string id="st_frag_opening_neutral_3"><text>Listen,</text></string>
+<string id="st_frag_opening_neutral_4"><text>So,</text></string>
+<string id="st_frag_opening_neutral_5"><text>Heard something:</text></string>
+<string id="st_frag_opening_neutral_6"><text>Quick question -</text></string>
+<string id="st_frag_opening_neutral_7"><text>Not sure if you heard,</text></string>
+<string id="st_frag_opening_neutral_8"><text>Word is</text></string>
+<string id="st_frag_opening_neutral_9"><text>Apparently</text></string>
+<string id="st_frag_opening_neutral_10"><text>Check this out:</text></string>
+
+<!-- Jovial/Drunk openings -->
+<string id="st_frag_opening_jovial_1"><text>Hah! Listen to this:</text></string>
+<string id="st_frag_opening_jovial_2"><text>You're gonna love this -</text></string>
+<string id="st_frag_opening_jovial_3"><text>Okay okay, so</text></string>
+<string id="st_frag_opening_jovial_4"><text>This is hilarious:</text></string>
+<string id="st_frag_opening_jovial_5"><text>Brother, you won't believe this.</text></string>
+<string id="st_frag_opening_jovial_6"><text>*laughs*</text></string>
+
+<!-- Proud openings -->
+<string id="st_frag_opening_proud_1"><text>Just saying,</text></string>
+<string id="st_frag_opening_proud_2"><text>Not to brag, but</text></string>
+<string id="st_frag_opening_proud_3"><text>Yeah, so</text></string>
+<string id="st_frag_opening_proud_4"><text>Impressive, right?</text></string>
+
+<!-- Fearful openings -->
+<string id="st_frag_opening_fearful_1"><text>I'm worried about</text></string>
+<string id="st_frag_opening_fearful_2"><text>This is bad -</text></string>
+<string id="st_frag_opening_fearful_3"><text>We need to talk about</text></string>
+<string id="st_frag_opening_fearful_4"><text>Something's wrong with</text></string>
+<string id="st_frag_opening_fearful_5"><text>Be careful,</text></string>
+
+<!-- =====================================================================
+     SUBJECT FRAGMENTS (Relationship-based)
+     Who/what we're talking about
+     ===================================================================== -->
+
+<!-- Hostile subjects (trader/faction/person) -->
+<string id="st_frag_subject_hostile_1"><text>that bastard {trader}</text></string>
+<string id="st_frag_subject_hostile_2"><text>that scumbag {trader}</text></string>
+<string id="st_frag_subject_hostile_3"><text>those {enemy_faction} assholes</text></string>
+<string id="st_frag_subject_hostile_4"><text>that greedy fuck {trader}</text></string>
+<string id="st_frag_subject_hostile_5"><text>{enemy_faction} scum</text></string>
+<string id="st_frag_subject_hostile_6"><text>those {enemy_faction} idiots</text></string>
+
+<!-- Neutral subjects (generic - avoid topic-specific variables) -->
+<string id="st_frag_subject_neutral_1"><text>someone</text></string>
+<string id="st_frag_subject_neutral_2"><text>they say</text></string>
+<string id="st_frag_subject_neutral_3"><text>word is</text></string>
+<string id="st_frag_subject_neutral_4"><text>I heard</text></string>
+
+<!-- Price-specific subjects -->
+<string id="st_frag_subject_price_1"><text>{trader}</text></string>
+<string id="st_frag_subject_price_2"><text>that trader {trader}</text></string>
+
+<!-- Location-specific subjects -->
+<string id="st_frag_subject_location_1"><text>near {location}</text></string>
+<string id="st_frag_subject_location_2"><text>at {location}</text></string>
+
+<!-- Faction-specific subjects -->
+<string id="st_frag_subject_faction_1"><text>{enemy_faction}</text></string>
+<string id="st_frag_subject_faction_2"><text>those {enemy_faction} bastards</text></string>
+
+<!-- Friendly subjects -->
+<string id="st_frag_subject_friendly_1"><text>good old {trader}</text></string>
+<string id="st_frag_subject_friendly_2"><text>our friend {trader}</text></string>
+<string id="st_frag_subject_friendly_3"><text>my buddy {target}</text></string>
+<string id="st_frag_subject_friendly_4"><text>{target}, you know him,</text></string>
+
+<!-- =====================================================================
+     ACTION FRAGMENTS (Topic-based)
+     What's happening - price changes, sightings, events
+     ===================================================================== -->
+
+<!-- Price-related actions -->
+<string id="st_frag_action_price_1"><text>raised prices on</text></string>
+<string id="st_frag_action_price_2"><text>is gouging us for</text></string>
+<string id="st_frag_action_price_3"><text>wants</text></string>
+<string id="st_frag_action_price_4"><text>is charging</text></string>
+<string id="st_frag_action_price_5"><text>hiked the price of</text></string>
+<string id="st_frag_action_price_6"><text>dropped prices on</text></string>
+<string id="st_frag_action_price_7"><text>is buying</text></string>
+<string id="st_frag_action_price_8"><text>won't pay shit for</text></string>
+
+<!-- Location-related actions -->
+<string id="st_frag_action_location_1"><text>saw</text></string>
+<string id="st_frag_action_location_2"><text>heard about</text></string>
+<string id="st_frag_action_location_3"><text>ran into</text></string>
+<string id="st_frag_action_location_4"><text>barely survived</text></string>
+<string id="st_frag_action_location_5"><text>got chased by</text></string>
+<string id="st_frag_action_location_6"><text>found</text></string>
+
+<!-- Survival-related actions -->
+<string id="st_frag_action_survival_1"><text>almost died to</text></string>
+<string id="st_frag_action_survival_2"><text>escaped from</text></string>
+<string id="st_frag_action_survival_3"><text>survived</text></string>
+<string id="st_frag_action_survival_4"><text>got cornered by</text></string>
+
+<!-- Faction-related actions -->
+<string id="st_frag_action_faction_1"><text>are fighting</text></string>
+<string id="st_frag_action_faction_2"><text>ambushed</text></string>
+<string id="st_frag_action_faction_3"><text>are at war with</text></string>
+<string id="st_frag_action_faction_4"><text>wiped out</text></string>
+
+<!-- =====================================================================
+     OBJECT FRAGMENTS (Context-based)
+     What the action is targeting
+     ===================================================================== -->
+
+<!-- Items (with variable substitution) -->
+<string id="st_frag_object_generic_1"><text>{item}s</text></string>
+<string id="st_frag_object_generic_2"><text>basic {item}s</text></string>
+<string id="st_frag_object_generic_3"><text>goddamn {item}s</text></string>
+<string id="st_frag_object_generic_4"><text>essential {item}s like {item}</text></string>
+<string id="st_frag_object_generic_5"><text>cheap {item}s</text></string>
+<string id="st_frag_object_generic_6"><text>quality {item}s</text></string>
+
+<!-- Creatures/Mutants -->
+<string id="st_frag_object_location_1"><text>a {mutant_type}</text></string>
+<string id="st_frag_object_location_2"><text>multiple {mutant_type}s</text></string>
+<string id="st_frag_object_location_3"><text>fresh {mutant_type} tracks</text></string>
+<string id="st_frag_object_location_4"><text>{mutant_type} corpses</text></string>
+
+<!-- =====================================================================
+     DETAIL FRAGMENTS (Context-specific numbers/facts)
+     Add specific information from context
+     ===================================================================== -->
+
+<!-- Price details -->
+<string id="st_frag_detail_price_1"><text>for {current_price} rubles.</text></string>
+<string id="st_frag_detail_price_2"><text>- went from {previous_price} to {current_price} rubles!</text></string>
+<string id="st_frag_detail_price_3"><text>at {current_price}. Highway robbery.</text></string>
+<string id="st_frag_detail_price_4"><text>to {current_price}. Was {previous_price} last week.</text></string>
+<string id="st_frag_detail_price_5"><text>at {current_price}. Total ripoff.</text></string>
+<string id="st_frag_detail_price_6"><text>for {current_price} each. Used to be {previous_price}.</text></string>
+
+<!-- Location details -->
+<string id="st_frag_detail_location_1"><text>near {location}.</text></string>
+<string id="st_frag_detail_location_2"><text>in {location}, during the {time_of_day}.</text></string>
+<string id="st_frag_detail_location_3"><text>around {location}. Watch yourself.</text></string>
+<string id="st_frag_detail_location_4"><text>at {location}. Don't go alone.</text></string>
+
+<!-- Survival details -->
+<string id="st_frag_detail_survival_1"><text>Had {time_survived} seconds left.</text></string>
+<string id="st_frag_detail_survival_2"><text>Took {injury_level} injuries.</text></string>
+<string id="st_frag_detail_survival_3"><text>at {location}. Barely made it out.</text></string>
+
+<!-- =====================================================================
+     CLOSER FRAGMENTS (Emotion-based)
+     How the message ends
+     ===================================================================== -->
+
+<!-- Angry closers -->
+<string id="st_frag_closer_angry_1"><text>What a ripoff.</text></string>
+<string id="st_frag_closer_angry_2"><text>This is bullshit.</text></string>
+<string id="st_frag_closer_angry_3"><text>Fucking Zone.</text></string>
+<string id="st_frag_closer_angry_4"><text>I'm done with this.</text></string>
+<string id="st_frag_closer_angry_5"><text>Someone's gonna pay for this.</text></string>
+
+<!-- Neutral closers -->
+<string id="st_frag_closer_neutral_1"><text>Just so you know.</text></string>
+<string id="st_frag_closer_neutral_2"><text>Thought you should hear about it.</text></string>
+<string id="st_frag_closer_neutral_3"><text>That's the word, anyway.</text></string>
+<string id="st_frag_closer_neutral_4"><text>Make of that what you will.</text></string>
+<string id="st_frag_closer_neutral_5"><text>Figured I'd mention it.</text></string>
+<string id="st_frag_closer_neutral_6"><text>Stay sharp.</text></string>
+
+<!-- Jovial closers -->
+<string id="st_frag_closer_jovial_1"><text>Cheers, brother.</text></string>
+<string id="st_frag_closer_jovial_2"><text>Zone's wild, huh?</text></string>
+<string id="st_frag_closer_jovial_3"><text>Typical Zone shit.</text></string>
+<string id="st_frag_closer_jovial_4"><text>Good times.</text></string>
+
+<!-- Fearful closers -->
+<string id="st_frag_closer_fearful_1"><text>Be careful out there.</text></string>
+<string id="st_frag_closer_fearful_2"><text>Don't say I didn't warn you.</text></string>
+<string id="st_frag_closer_fearful_3"><text>This place is getting worse.</text></string>
+<string id="st_frag_closer_fearful_4"><text>Watch your back.</text></string>
+
+<!-- Proud closers -->
+<string id="st_frag_closer_proud_1"><text>Not everyone could pull that off.</text></string>
+<string id="st_frag_closer_proud_2"><text>Still got it.</text></string>
+<string id="st_frag_closer_proud_3"><text>Another day in the Zone.</text></string>
+
+<!-- =====================================================================
+     GENERIC FALLBACK MESSAGES
+     Used when fragment composition isn't available
+     ===================================================================== -->
+
+<string id="st_frag_opening_generic_1"><text>You know,</text></string>
+<string id="st_frag_opening_generic_2"><text>So,</text></string>
+<string id="st_frag_opening_generic_3"><text>Listen,</text></string>
+
+<string id="st_frag_subject_generic_1"><text>things</text></string>
+<string id="st_frag_subject_generic_2"><text>the situation</text></string>
+<string id="st_frag_subject_generic_3"><text>stuff</text></string>
+
+<string id="st_frag_action_generic_1"><text>are happening</text></string>
+<string id="st_frag_action_generic_2"><text>are changing</text></string>
+<string id="st_frag_action_generic_3"><text>keep moving</text></string>
+
+<string id="st_frag_object_generic_7"><text>around here.</text></string>
+<string id="st_frag_object_generic_8"><text>in the Zone.</text></string>
+
+<string id="st_frag_detail_generic_1"><text>Nothing specific.</text></string>
+<string id="st_frag_detail_generic_2"><text>Just a heads up.</text></string>
+
+<string id="st_frag_closer_generic_1"><text>That's all.</text></string>
+<string id="st_frag_closer_generic_2"><text>Stay alive.</text></string>
+
+</string_table>
